@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diapet — 홈 구조 후보 비교</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  :root{
+    --orange-500:#F15A24;--orange-600:#D84816;--orange-400:#FF7A3D;--orange-300:#FFB088;
+    --orange-wash:#FFF0E8;--orange-tint:#FBE0D2;--sunset:#FF6A2C;
+    --paper:#FFF8F3;--card:#FFFFFF;--ink:#241A14;--soft:#6B5D53;--faint:#9C8E83;
+    --line:#EFE4DB;--line-2:#E0D2C6;--ok:#2E9E6B;--ok-wash:#E4F4EC;
+    --ember:#BE4718;--ember-wash:#FBE9E0;--gold:#D3A23C;--gold-wash:#F8EFD9;
+    --grad:linear-gradient(160deg,#FF7A3D 0%,#F15A24 100%);
+    --sans:"Pretendard",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    --mono:"SF Mono",Consolas,monospace;
+    --e1:0 1px 2px rgba(58,30,12,.05),0 8px 22px -18px rgba(58,30,12,.4);
+    --e2:0 12px 26px -16px rgba(58,30,12,.28);
+    --e3:0 8px 18px -8px rgba(241,90,36,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e7ded4;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;padding:30px 20px 60px}
+  svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .head{max-width:1180px;margin:0 auto 26px}
+  .head h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .head p{color:#5c4d40;font-size:14px;margin-top:6px}
+  .row{display:flex;gap:26px;max-width:1180px;margin:0 auto;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .col{width:340px;max-width:100%}
+  .capt{margin-top:16px}
+  .capt .tag{display:inline-block;font-size:11px;font-weight:800;color:var(--orange-600);background:var(--orange-wash);padding:4px 10px;border-radius:999px;letter-spacing:.02em}
+  .capt h2{font-size:17px;font-weight:800;margin:10px 0 6px;letter-spacing:-.01em}
+  .capt .d{font-size:13px;color:#4c4038;line-height:1.6}
+  .capt ul{margin:10px 0 0;padding:0;list-style:none}
+  .capt li{font-size:12.5px;color:#5a4d43;padding:3px 0 3px 18px;position:relative;line-height:1.5}
+  .capt li.p::before{content:"+";position:absolute;left:2px;color:var(--ok);font-weight:800}
+  .capt li.m::before{content:"–";position:absolute;left:3px;color:var(--faint);font-weight:800}
+
+  /* phone */
+  .phone{height:640px;background:var(--paper);border-radius:34px;box-shadow:0 20px 50px -18px rgba(40,20,6,.5),0 0 0 8px #1a130c,0 0 0 9px #322618;
+    overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .hbar{flex:none;padding:16px 18px 10px;display:flex;align-items:center;gap:10px}
+  .hbar .wm{font-size:19px;font-weight:800;letter-spacing:-.03em;color:var(--orange-500)}
+  .hbar .sp{flex:1}
+  .hbar .ic{width:34px;height:34px;border-radius:11px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--soft)}
+  .hbar .ic svg{width:17px;height:17px}
+  .body{flex:1;overflow-y:auto;padding:4px 18px 18px}
+  .body::-webkit-scrollbar{width:0}
+  .greet{font-size:15px;font-weight:750;margin:6px 2px 2px}
+  .greet small{display:block;font-size:12px;color:var(--soft);font-weight:500;margin-top:3px}
+  .sec-t{font-size:12px;font-weight:800;color:var(--faint);letter-spacing:.02em;margin:20px 2px 10px}
+
+  /* status card */
+  .stat{background:var(--orange-wash);border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:12px;margin-top:14px}
+  .stat .dd{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ember);background:#fff;border-radius:8px;padding:5px 9px;flex:none}
+  .stat b{font-size:14px;font-weight:750;display:block}
+  .stat span{font-size:12px;color:var(--soft)}
+  .stat .arr{margin-left:auto;color:var(--orange-400);flex:none}
+  .stat.book{background:var(--card);box-shadow:var(--e1)}
+
+  /* feature grid tiles (no icon box) */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .tile{background:var(--card);border-radius:16px;padding:15px 14px;box-shadow:var(--e1);cursor:pointer;transition:.15s;min-height:92px;display:flex;flex-direction:column;justify-content:space-between}
+  .tile:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+  .tile svg{width:23px;height:23px;color:var(--orange-500)}
+  .tile b{font-size:13.5px;font-weight:750;margin-top:12px}
+  .tile span{font-size:11px;color:var(--soft);margin-top:2px;line-height:1.4}
+
+  /* situation choice */
+  .choice{display:flex;align-items:center;gap:10px;padding:17px 16px;border-radius:16px;background:var(--card);box-shadow:var(--e1);margin-bottom:10px;cursor:pointer;transition:.15s}
+  .choice:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+  .choice .tx{flex:1}
+  .choice h4{font-size:15px;font-weight:750;letter-spacing:-.01em}
+  .choice p{font-size:11.5px;color:var(--soft);margin-top:3px}
+  .choice .arr{color:var(--line-2);flex:none}
+  .choice.ember{background:var(--ember-wash)}
+  .choice.ember h4{color:var(--ember)}
+
+  /* mini list */
+  .mlist{background:var(--card);border-radius:16px;box-shadow:var(--e1);overflow:hidden}
+  .mrow{display:flex;align-items:center;gap:11px;padding:14px 15px;border-bottom:1px solid var(--line);cursor:pointer}
+  .mrow:last-child{border-bottom:none}
+  .mrow svg{width:19px;height:19px;color:var(--orange-500);flex:none}
+  .mrow b{font-size:13.5px;font-weight:700;flex:1}
+  .mrow .arr{color:var(--line-2)}
+
+  /* feed card */
+  .feed{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--e1);margin-top:12px}
+  .feed .k{font-size:11px;font-weight:800;color:var(--orange-600);letter-spacing:.03em}
+  .feed h4{font-size:15px;font-weight:750;margin:7px 0 4px}
+  .feed p{font-size:12.5px;color:var(--soft);line-height:1.55}
+  .notice{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}
+  .notice:last-child{border-bottom:none}
+  .notice .dot{width:7px;height:7px;border-radius:50%;background:var(--orange-400);margin-top:6px;flex:none}
+  .notice b{font-size:13px;font-weight:700}
+  .notice span{font-size:11.5px;color:var(--faint)}
+
+  /* primary CTA */
+  .cta{width:100%;padding:15px;border:none;border-radius:15px;background:var(--grad);color:#fff;font-family:var(--sans);
+    font-size:14.5px;font-weight:700;box-shadow:var(--e3);cursor:pointer;margin-top:14px}
+
+  /* tab bar */
+  .tabbar{flex:none;display:flex;justify-content:space-around;align-items:center;height:62px;border-top:1px solid var(--line);background:var(--card)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--faint)}
+  .tab svg{width:22px;height:22px}
+  .tab.on{color:var(--orange-500)}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Diapet — 홈 구조 후보 3안</h1>
+  <p>확정 기능 리스트를 담은 홈(허브) 후보. 모두 DESIGN.md(주황 시스템·아이콘 박스 없음·하단 탭바) 기준. 하나 고르시면 프로토타입에 반영합니다.</p>
+</div>
+
+<div class="row">
+
+  <!-- ============ A : 허브 대시보드 ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="hbar">
+        <span class="wm">Diapet</span><span class="sp"></span>
+        <div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+        <div class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="greet">안녕하세요, 보리 보호자님<small>오늘도 곁에서 함께할게요.</small></div>
+
+        <div class="stat">
+          <div class="dd">D-7</div>
+          <div><b>보리의 기일이 다가와요</b><span>3월 14일 · 추모 공간 둘러보기</span></div>
+          <div class="arr"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+
+        <div class="sec-t">바로가기</div>
+        <div class="grid">
+          <div class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V12h6v9"/></svg><div><b>장례 예약</b><span>합법 업체 비교·확정가</span></div></div>
+          <div class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg><div><b>추모 공간</b><span>기억을 오래도록</span></div></div>
+          <div class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><div><b>사전 준비</b><span>미리 차분하게</span></div></div>
+          <div class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg><div><b>펫로스 상담</b><span>혼자 견디지 않게</span></div></div>
+        </div>
+
+        <div class="sec-t">사후 안내</div>
+        <div class="mlist">
+          <div class="mrow"><svg class="i" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><b>동물등록 말소 신고</b><span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>예약</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </div>
+    <div class="capt">
+      <span class="tag">A안 · 허브 대시보드</span>
+      <h2>인사 + 진행상황 + 기능 그리드</h2>
+      <div class="d">재방문 사용자 중심. 기일·예약 상태를 먼저 보여주고, 모든 기능을 타일로 한눈에.</div>
+      <ul>
+        <li class="p">여러 기능을 균형 있게 노출 · 확장 쉬움</li>
+        <li class="p">재방문(추모·관리) 사용자에게 최적</li>
+        <li class="m">임종 직후 급한 사용자에겐 한 단계 더 필요</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ B : 상황 우선 홈 ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="hbar">
+        <span class="wm">Diapet</span><span class="sp"></span>
+        <div class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="greet" style="font-size:18px;margin-top:8px">무엇을 도와드릴까요?<small>지금 상황에 맞게 안내해 드릴게요.</small></div>
+
+        <div style="margin-top:18px"></div>
+        <div class="choice ember"><div class="tx"><h4>아이를 보내주려 해요</h4><p>지금 무엇부터 해야 할지 바로 안내</p></div><div class="arr"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+        <div class="choice"><div class="tx"><h4>장례식장을 알아보고 있어요</h4><p>합법 장례식장 비교 · 확정 견적</p></div><div class="arr"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+        <div class="choice"><div class="tx"><h4>미리 준비해두고 싶어요</h4><p>노령·투병 아이를 위한 사전 준비</p></div><div class="arr"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+
+        <div class="sec-t">이런 것도 있어요</div>
+        <div class="mlist">
+          <div class="mrow"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg><b>추모 공간</b><span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          <div class="mrow"><svg class="i" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg><b>펫로스 상담</b><span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          <div class="mrow"><svg class="i" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><b>사후 행정 안내</b><span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>예약</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </div>
+    <div class="capt">
+      <span class="tag">B안 · 상황 우선 홈</span>
+      <h2>상황 선택 3개 + 보조 기능</h2>
+      <div class="d">지금 홈(선택지 3개)을 유지하되 하단에 추모·상담·사후안내 접근을 추가하고 탭바로 보완.</div>
+      <ul>
+        <li class="p">임종 직후 급한 사용자에게 가장 직관적</li>
+        <li class="p">지금 흐름과 연속성 · 전환율 유리</li>
+        <li class="m">재방문·추모 중심 사용자에겐 다소 단조</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ C : 탭바 중심 심플 ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="hbar"><span class="wm" style="font-size:17px;color:var(--ink)">홈</span></div>
+      <div class="body">
+        <div class="stat book" style="margin-top:8px">
+          <div class="dd" style="color:var(--ok);background:var(--ok-wash)">예약</div>
+          <div><b>포레스트 추모원 예약 확정</b><span>오늘 15:00 · 참관 가능</span></div>
+          <div class="arr"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+
+        <button class="cta">＋ 장례 예약 시작하기</button>
+
+        <div class="sec-t">오늘의 안내</div>
+        <div class="feed">
+          <div class="notice"><div class="dot"></div><div><b>동물등록 말소 신고, 잊지 마세요</b><br><span>사망 30일 이내 · 정부24 바로가기</span></div></div>
+          <div class="notice"><div class="dot" style="background:var(--ember)"></div><div><b>보리의 기일이 7일 남았어요</b><br><span>추모 공간에서 촛불을 켜보세요</span></div></div>
+          <div class="notice"><div class="dot" style="background:var(--gold)"></div><div><b>펫로스 상담 무료 1회</b><br><span>혼자 견디지 않으셔도 됩니다</span></div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>예약</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </div>
+    <div class="capt">
+      <span class="tag">C안 · 탭바 중심</span>
+      <h2>피드형 홈 + 기능은 탭 분리</h2>
+      <div class="d">홈은 진행상황·안내 피드로 가볍게. 예약·추모 등은 하단 탭으로 완전히 분리.</div>
+      <ul>
+        <li class="p">기능이 더 늘어도 구조가 안 흔들림</li>
+        <li class="p">정보성 알림(말소·기일·상담) 전달 강함</li>
+        <li class="m">첫 진입 시 "무엇부터" 안내가 약함</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

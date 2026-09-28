@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diapet — 반려동물 장례·추모 (프로토타입)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  :root{
+    --orange-500:#F15A24; --orange-600:#D84816; --orange-400:#FF7A3D; --orange-300:#FFB088;
+    --orange-wash:#FFF0E8; --orange-tint:#FBE0D2; --sunset:#FF6A2C;
+    --paper:#FDFAF6; --card:#FFFFFF; --ink:#241A14; --soft:#6B5D53; --faint:#9C8E83;
+    --line:#EFE4DB; --line-2:#E0D2C6;
+    --ok:#2E9E6B; --ok-wash:#E4F4EC; --warn:#E0912F; --warn-wash:#FDF0DD;
+    --ember:#BE4718; --ember-wash:#FBE9E0; --danger:#C6402E;
+    --gold:#D3A23C; --gold-wash:#F8EFD9;
+    --grad:linear-gradient(160deg,#FF7A3D 0%,#F15A24 100%);
+    --sans:"Pretendard",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    --mono:"SF Mono",Consolas,monospace;
+    --e1:0 1px 2px rgba(58,30,12,.05), 0 10px 28px -20px rgba(58,30,12,.35);
+    --e2:0 12px 26px -16px rgba(58,30,12,.28);
+    --e3:0 8px 20px -8px rgba(241,90,36,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e7ded4;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:22px 12px 40px;line-height:1.6}
+  .demo-note{font-size:12px;color:#7a6b5d;margin-bottom:14px;text-align:center;max-width:360px}
+  .demo-note b{color:var(--orange-600)}
+  svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  /* phone */
+  .phone{width:390px;max-width:100%;height:820px;max-height:90vh;background:var(--paper);border-radius:40px;
+    box-shadow:0 30px 70px -20px rgba(40,20,6,.5),0 0 0 10px #1a130c,0 0 0 11px #322618;
+    overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#1a130c;border-radius:0 0 16px 16px;z-index:60}
+  .status{height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:12px;font-weight:600;z-index:50}
+  .status .dots{font-family:var(--mono);letter-spacing:1px}
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:6px 20px 26px;
+    opacity:0;visibility:hidden;transform:translateX(16px);transition:opacity .32s ease,transform .32s ease}
+  .screen.active{opacity:1;visibility:visible;transform:none}
+  .screen::-webkit-scrollbar{width:0}
+  @media(prefers-reduced-motion:reduce){.screen{transition:none}}
+
+  .bar{display:flex;align-items:center;gap:10px;padding:6px 0 14px;position:sticky;top:0;background:linear-gradient(var(--paper) 80%,transparent);z-index:10}
+  .back{width:36px;height:36px;flex:none;border:1px solid var(--line-2);border-radius:12px;background:var(--card);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+  .back:hover{background:var(--orange-wash);border-color:var(--orange-300)}
+  .bar h2{font-size:18px;font-weight:750;letter-spacing:-.01em}
+  .bar .step{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+  .eyebrow{font-size:11.5px;letter-spacing:.04em;color:var(--orange-500);font-weight:800}
+  h1.big{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin:10px 0;text-wrap:balance}
+  p.lede{color:var(--soft);font-size:14.5px}
+  .muted{color:var(--faint);font-size:12.5px}
+
+  /* buttons */
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border:none;border-radius:16px;
+    font-family:var(--sans);font-size:15.5px;font-weight:700;cursor:pointer;transition:.16s;letter-spacing:-.01em}
+  .btn.primary{background:var(--grad);color:#fff;box-shadow:var(--e3)}
+  .btn.primary:hover{transform:translateY(-1px);filter:saturate(1.05)}
+  .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line-2)}
+  .btn.ghost:hover{border-color:var(--orange-300);background:var(--orange-wash)}
+  .btn.block{margin-top:12px}
+  .sticky-cta{position:sticky;bottom:0;padding:14px 0 4px;background:linear-gradient(transparent,var(--paper) 26%)}
+
+  .card{background:var(--card);border-radius:18px;padding:16px;margin-top:12px;box-shadow:var(--e1)}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:10px;letter-spacing:-.01em}
+  .badge.ok{background:var(--ok-wash);color:var(--ok)}
+  .badge.watch{background:var(--orange-wash);color:var(--orange-600)}
+  .badge.gold{background:var(--gold-wash);color:var(--gold)}
+  .badge svg{width:12px;height:12px}
+
+  /* HOME */
+  .brand{display:flex;align-items:center;gap:11px;margin:24px 0 26px}
+  .brand .mark{width:46px;height:46px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;
+    box-shadow:8px 9px 0 rgba(0,0,0,.05),0 10px 24px -10px rgba(90,30,0,.35)}
+  .brand .mark svg{width:26px;height:26px}
+  .brand .name{font-size:17px;font-weight:800;letter-spacing:-.02em}
+  .brand .name small{display:block;font-size:10px;font-weight:600;color:var(--faint);letter-spacing:.08em;margin-top:2px}
+  .home-choices{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+  .choice{display:flex;align-items:center;gap:12px;padding:21px 20px;border-radius:18px;cursor:pointer;transition:.16s;background:var(--card);box-shadow:var(--e1)}
+  .choice:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+  .choice .tx{flex:1}
+  .choice h3{font-size:16.5px;font-weight:750;letter-spacing:-.01em}
+  .choice p{font-size:12.5px;color:var(--soft);margin-top:5px}
+  .choice .arr{color:var(--line-2);flex:none;transition:.16s}
+  .choice:hover .arr{color:var(--orange-400)}
+  .choice.ember{background:var(--ember-wash)}
+  .choice.ember h3{color:var(--ember)}
+  .choice.ember p{color:#9a6a53}
+  .choice.ember .arr{color:#e0a88f}
+  .choice.ember:hover .arr{color:var(--ember)}
+  .trust-row{display:flex;gap:6px;margin-top:24px;flex-wrap:wrap;justify-content:center}
+  .reassure{margin-top:18px;text-align:center;font-size:12.5px;color:var(--soft);line-height:1.7}
+  .reassure b{color:var(--ink)}
+  /* ONBOARDING */
+  #s-onboard{padding:0}
+  .ob-img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+  /* full-image screens (온보딩 등) */
+  .img-screen{position:relative}
+  .img-screen>img{width:100%;display:block}
+  .ov{position:absolute;cursor:pointer}
+  /* ===== CRISIS timeline (코드) ===== */
+  .cbar{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;padding:4px 0 12px;position:sticky;top:0;background:linear-gradient(var(--paper) 82%,transparent);z-index:10}
+  .cbar .back{width:36px;height:36px;border:1px solid var(--line-2);border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .cbar .back svg{width:17px;height:17px}
+  .cbar-logo{height:22px;justify-self:center}
+  .cbar .cnt{font-family:var(--mono);font-size:11px;color:var(--faint);justify-self:end}
+  .crisis-title{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-top:4px;text-wrap:balance}
+  .crisis-sub{color:var(--soft);font-size:14px;margin-top:9px;line-height:1.6}
+  .crisis-note{margin-top:10px;font-size:13px;color:var(--orange-500);font-weight:600}
+  .timeline{margin-top:20px}
+  .tstep{display:flex;gap:13px;position:relative;padding-bottom:14px}
+  .tstep:not(:last-child)::before{content:"";position:absolute;left:15px;top:38px;bottom:-2px;width:2px;background:var(--line-2)}
+  .tnum{width:32px;height:32px;border-radius:50%;background:var(--orange-wash);color:var(--orange-600);font-family:var(--mono);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;z-index:1}
+  .tcard{flex:1;background:var(--card);border-radius:16px;padding:13px 14px;box-shadow:var(--e1);display:flex;gap:10px;align-items:center;min-height:82px}
+  .tcard .txt{flex:1}
+  .tcard h4{font-size:15px;font-weight:750;margin-bottom:4px}
+  .tcard p{font-size:12px;color:var(--soft);line-height:1.5}
+  .tcard .ill{width:82px;flex:none;display:flex;align-items:center;justify-content:center}
+  .tcard .ill img{width:100%;display:block}
+  /* ===== HOME (dashboard) ===== */
+  #s-home,#s-my,#s-list,#s-memorial{padding:0}
+  #s-home.active,#s-my.active,#s-list.active,#s-memorial.active{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+  .home-top{flex:none;display:flex;align-items:center;padding:14px 20px 6px}
+  .home-top .wm-logo{height:27px;display:block}
+  .home-top .bell{margin-left:auto;position:relative;color:var(--soft);cursor:pointer}
+  .home-top .bell svg{width:23px;height:23px}
+  .home-top .bell::after{content:"";position:absolute;top:0;right:0;width:7px;height:7px;border-radius:50%;background:var(--ember)}
+  .home-body{flex:1;overflow-y:hidden;padding:8px 20px 18px}
+  .home-body::-webkit-scrollbar{width:0}
+  .hgreet{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-top:4px}
+  .hgreet-sub{color:var(--soft);font-size:14px;margin-top:9px;line-height:1.6}
+  .home-hero{position:relative;margin:-2px -20px 6px;padding:16px 20px 0;min-height:336px;overflow:hidden;
+    background:url(../../img/home_hero.png) no-repeat;background-size:112%;background-position:center bottom}
+  .home-hero::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:linear-gradient(180deg,var(--paper) 10%,rgba(253,250,246,.4) 30%,transparent 52%)}
+  .home-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:96px;pointer-events:none;z-index:1;
+    backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+    -webkit-mask:linear-gradient(transparent,#000 78%);mask:linear-gradient(transparent,#000 78%);
+    background:linear-gradient(transparent,var(--paper))}
+  .home-hero .hgreet,.home-hero .hgreet-sub{position:relative;z-index:2}
+  .hero-ember{margin-top:16px;background:var(--grad);border-radius:20px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;color:#fff;box-shadow:var(--e3);transition:.16s;overflow:hidden}
+  .hero-ember:hover{transform:translateY(-1px)}
+  .hero-ember .tx{flex:1}
+  .hero-ember h3{font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.3}
+  .hero-ember p{font-size:13px;opacity:.94;margin-top:6px;line-height:1.5}
+  .hero-ember .photo{width:66px;height:66px;border-radius:16px;object-fit:cover;flex:none}
+  .hsec{font-size:13px;font-weight:800;margin:22px 2px 12px}
+  .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;margin-top:8px}
+  .stile{display:flex;align-items:center;gap:12px;padding:4px 2px;cursor:pointer;transition:.15s}
+  .stile:hover{opacity:.65}
+  .stile svg{width:25px;height:25px;flex:none}
+  .stile b{font-size:14px;font-weight:700}
+  .stile.c1 svg{color:var(--orange-500)}
+  .stile.c2 svg{color:#4E9E6A}
+  .stile.c3 svg{color:#8578CE}
+  .stile.c4 svg{color:#5B93C9}
+  .hfoot{margin-top:22px;font-size:12.5px;color:var(--faint);text-align:center;line-height:1.7}
+  .tabbar{flex:none;display:flex;justify-content:space-around;align-items:center;height:64px;border-top:1px solid var(--line);background:var(--card)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--faint);cursor:pointer}
+  .tab svg{width:22px;height:22px}
+  .tab.on{color:var(--orange-500)}
+  /* ===== MY PAGE ===== */
+  .my-scroll{flex:1;overflow-y:auto}
+  .my-scroll::-webkit-scrollbar{width:0}
+  .my-hero{position:relative;padding:16px 20px 8px;min-height:212px;overflow:hidden;
+    background:url(../../img/my_hero.png) no-repeat;background-size:62%;background-position:right -8px top 64px}
+  .my-hero::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:linear-gradient(100deg,var(--paper) 32%,rgba(253,250,246,.45) 52%,transparent 76%)}
+  .my-hero::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    -webkit-mask:linear-gradient(#000,transparent 26%,transparent 74%,#000);mask:linear-gradient(#000,transparent 26%,transparent 74%,#000)}
+  .my-topbar{position:relative;z-index:2;display:flex;align-items:center}
+  .my-topbar .wm-logo{height:26px}
+  .my-topbar .gear{margin-left:auto;color:var(--soft);cursor:pointer}
+  .my-topbar .gear svg{width:22px;height:22px}
+  .my-greet{position:relative;z-index:2;font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.34;margin-top:16px}
+  .my-body{padding:2px 20px 0}
+  .segtabs{display:flex;gap:6px;margin:8px 0 16px}
+  .segtab{flex:1;text-align:center;padding:11px;border-radius:12px;font-size:14px;font-weight:700;color:var(--faint);cursor:pointer;transition:.15s}
+  .segtab.on{background:var(--orange-wash);color:var(--orange-600)}
+  .my-greet .petname{color:var(--orange-500)}
+  .petlist{display:flex;flex-direction:column;gap:11px}
+  .petcard{background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--e1);display:flex;gap:14px;align-items:center;cursor:pointer;border:1.5px solid transparent;transition:.16s}
+  .petcard.sel{border-color:var(--orange-400);box-shadow:0 8px 22px -12px rgba(241,90,36,.35)}
+  .petcard .pic{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;display:block;aspect-ratio:1}
+  .petcard .info{flex:1;min-width:0}
+  .petcard .nm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .petcard .nm b{font-size:18px;font-weight:800}
+  .petcard .days{font-size:11px;font-weight:700;color:var(--orange-600);background:var(--orange-wash);padding:3px 9px;border-radius:999px}
+  .petcard .dt{font-size:12.5px;color:var(--soft);margin-top:6px}
+  .petcard .meta{font-size:12px;color:var(--faint);margin-top:3px}
+  .petcard .chev{margin-left:auto;color:var(--line-2);flex:none}
+  .petcard .pcheck{margin-left:auto;flex:none;width:26px;height:26px;border-radius:50%;background:var(--orange-500);color:#fff;display:none;align-items:center;justify-content:center}
+  .petcard .pcheck svg{width:15px;height:15px}
+  .petcard.sel .pcheck{display:flex}
+  .petcard.sel .chev{display:none}
+  .addpet{margin-top:11px;background:var(--card);border-radius:16px;padding:15px 16px;box-shadow:var(--e1);display:flex;align-items:center;gap:12px;cursor:pointer}
+  .addpet .plus{width:36px;height:36px;border-radius:50%;background:var(--orange-wash);color:var(--orange-600);display:flex;align-items:center;justify-content:center;flex:none}
+  .addpet .plus svg{width:18px;height:18px}
+  .addpet b{font-size:14px;font-weight:700}
+  .addpet .chev{margin-left:auto;color:var(--line-2)}
+  .sec-h{display:flex;align-items:center;margin:24px 2px 12px}
+  .sec-h b{font-size:16px;font-weight:800}
+  .sec-h .more{margin-left:auto;font-size:12.5px;color:var(--faint);cursor:pointer;display:flex;align-items:center;gap:3px}
+  .sec-h .more svg{width:13px;height:13px}
+  .histlist{background:var(--card);border-radius:16px;box-shadow:var(--e1);overflow:hidden}
+  .histrow{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+  .histrow:last-child{border-bottom:none}
+  .histrow .hi{flex:none;display:flex;align-items:center;justify-content:center}
+  .histrow .hi svg{width:24px;height:24px}
+  .histrow .ht{flex:1}
+  .histrow .ht b{font-size:14px;font-weight:700}
+  .histrow .ht span{font-size:12px;color:var(--faint);display:block;margin-top:3px}
+  .histrow .chev{color:var(--line-2)}
+  .hi.c-book{color:var(--orange-500)}
+  .hi.c-mem{color:#8578CE}
+  .hi.c-doc{color:#4E9E6A}
+  .helpgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .helpcard{background:var(--card);border-radius:16px;padding:15px 14px;box-shadow:var(--e1);cursor:pointer}
+  .helpcard .row1{display:flex;align-items:center;gap:9px}
+  .helpcard .hc{flex:none;display:flex;align-items:center;justify-content:center}
+  .helpcard .hc svg{width:22px;height:22px}
+  .helpcard b{font-size:13.5px;font-weight:750}
+  .helpcard p{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.4}
+  .hc.c1{color:#8578CE}
+  .hc.c2{color:#946b47}
+  .hc.c3{color:var(--gold)}
+  .hc.c4{color:#7d746b}
+  .quote-band{margin:26px -20px 0;padding:24px 22px;position:relative;overflow:hidden;
+    background:linear-gradient(105deg,#F6EEE3 0%,#F2E3D4 100%)}
+  .quote-band .qt{position:relative;z-index:2;max-width:64%}
+  .quote-band .qt h4{font-size:15px;font-weight:800;color:#4a3a2d;line-height:1.55;letter-spacing:-.01em}
+  .quote-band .qt p{font-size:12.5px;color:#a08f7e;font-weight:500;margin-top:12px}
+  .quote-band .qhand{position:absolute;right:18px;top:16px;z-index:3;font-size:12.5px;font-weight:600;color:var(--orange-400);transform:rotate(-6deg)}
+  .quote-band .qflower{position:absolute;right:6px;bottom:2px;height:104px;z-index:1}
+  /* my tabs panels + info/set + modal */
+  .mypanel[hidden]{display:none}
+  #pane-info,#pane-set{padding-bottom:28px}
+  .infocard{background:var(--card);border-radius:16px;box-shadow:var(--e1);overflow:hidden;margin-top:4px}
+  .inforow{display:flex;align-items:center;padding:15px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+  .inforow:last-child{border-bottom:none}
+  .inforow .k{font-size:13px;color:var(--faint);width:76px;flex:none}
+  .inforow .v{font-size:14px;font-weight:600}
+  .inforow .chev{margin-left:auto;color:var(--line-2)}
+  .setrow{display:flex;align-items:center;padding:16px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px;font-weight:600}
+  .setrow:last-child{border-bottom:none}
+  .setrow .chev{margin-left:auto;color:var(--line-2)}
+  .setrow .ver{margin-left:auto;color:var(--faint);font-size:12.5px;font-weight:500}
+  .setrow.logout{color:var(--danger)}
+  .modal-bg{position:absolute;inset:0;background:rgba(36,26,20,.42);display:flex;align-items:center;justify-content:center;z-index:100;padding:30px}
+  .modal-bg[hidden]{display:none}
+  .modal{background:var(--card);border-radius:20px;padding:24px 22px 20px;width:100%;max-width:312px;text-align:center;box-shadow:0 24px 50px -12px rgba(0,0,0,.45)}
+  .modal .mpic{width:60px;height:60px;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:block}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:9px}
+  .modal h3 b{color:var(--orange-500)}
+  .inforow .mini{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none;margin-right:12px}
+  .inforow .pt b{font-size:14px;font-weight:700;display:block}
+  .inforow .pt span{font-size:12px;color:var(--faint);display:block;margin-top:2px}
+  .modal p{font-size:13.5px;color:var(--soft);line-height:1.6;margin-bottom:20px}
+  .modal p b{color:var(--orange-600)}
+  .modal-btns{display:flex;gap:10px}
+  .modal-btns .btn{flex:1;padding:13px}
+  .edit-input{width:100%;padding:13px 14px;border:1.5px solid var(--line-2);border-radius:12px;font-family:var(--sans);font-size:15px;color:var(--ink);margin:6px 0 18px;outline:none;background:var(--paper);text-align:left}
+  .edit-input:focus{border-color:var(--orange-400)}
+  .edit-input::placeholder{color:var(--faint)}
+  .sel-opts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:10px 0 20px}
+  .sel-opt{padding:7px 12px;border:1.5px solid var(--line-2);border-radius:999px;font-size:13px;font-weight:600;color:var(--soft);cursor:pointer;transition:.14s}
+  .sel-opt.on{border-color:var(--orange-500);background:var(--orange-wash);color:var(--orange-600)}
+  .pe-step{text-align:left;min-height:104px}
+  .pe-step[hidden]{display:none}
+  .pe-step label{font-size:13px;font-weight:700;display:block;margin:2px 0 10px;color:var(--ink)}
+  .pe-dots{display:flex;gap:6px;justify-content:center;margin:10px 0 16px}
+  .pe-dot{width:7px;height:7px;border-radius:50%;background:var(--line-2);transition:.18s}
+  .pe-dot.on{width:18px;border-radius:999px;background:var(--orange-500)}
+  #petEditModal .opt{font-size:13px;padding:11px 6px}
+  #petEditModal .region-seg{flex-wrap:wrap;gap:6px}
+  #petEditModal .region-seg .opt{flex:0 0 auto;min-width:0;padding:6px 10px;border-radius:999px;font-size:12px}
+  /* HOME (minimal) */
+  .home-head{padding:24px 2px 2px}
+  .wordmark{font-size:23px;font-weight:800;letter-spacing:-.03em;color:var(--orange-500)}
+  .home-choices.solo{margin-top:26px}
+
+  /* CRISIS */
+  .steps{margin-top:4px}
+  .cstep{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .cstep:last-child{border-bottom:none}
+  .cstep .n{width:28px;height:28px;flex:none;border-radius:9px;background:var(--orange-wash);color:var(--orange-600);
+    font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .cstep h4{font-size:15px;font-weight:700;margin-bottom:3px}
+  .cstep p{font-size:13px;color:var(--soft)}
+  .night{margin-top:14px;background:var(--warn-wash);border-radius:14px;padding:13px 15px}
+  .night .h{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;color:var(--warn);margin-bottom:3px}
+  .night p{font-size:12.5px;color:#7a5a1f}
+
+  /* QUOTE */
+  .field{margin-top:18px}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:9px}
+  .field .sub{font-weight:500;color:var(--faint);font-size:11.5px}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{flex:1;min-width:60px;padding:12px 8px;text-align:center;border:1.5px solid var(--line-2);border-radius:12px;
+    background:var(--card);cursor:pointer;font-size:13.5px;font-weight:600;transition:.14s;color:var(--soft)}
+  .opt:hover{border-color:var(--orange-300)}
+  .opt.sel{border-color:var(--orange-500);background:var(--orange-wash);color:var(--orange-600)}
+  .opt small{display:block;font-size:10.5px;font-weight:500;color:var(--faint);margin-top:2px}
+  .opt.sel small{color:var(--orange-500)}
+  .est{margin-top:22px;background:var(--orange-wash);border-radius:16px;padding:16px 18px;display:flex;align-items:baseline;justify-content:space-between}
+  .est .l{font-size:13px;color:var(--soft);font-weight:600}
+  .est .v{font-family:var(--mono);font-size:25px;font-weight:800;color:var(--orange-600)}
+  .est .v small{font-size:12.5px;font-weight:600;color:var(--orange-500)}
+
+  /* LIST */
+  .vendor{background:var(--card);border-radius:18px;padding:16px;margin-top:12px;cursor:pointer;transition:.16s;box-shadow:var(--e1)}
+  .vendor:hover{box-shadow:var(--e2);transform:translateY(-2px)}
+  .vendor .top{display:flex;justify-content:space-between;gap:10px}
+  .vendor h3{font-size:16px;font-weight:750}
+  .vendor .dist{font-size:12px;color:var(--faint);margin-top:3px}
+  .vendor .price{text-align:right;flex:none}
+  .vendor .price .amt{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--orange-600)}
+  .vendor .price .tax{font-size:10px;color:var(--faint)}
+  .vendor .badges{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap}
+  .stars{color:var(--gold);font-size:12px;letter-spacing:1px;margin-top:10px}
+  .stars b{color:var(--soft);font-weight:600;margin-left:4px}
+  .list-note{margin-top:14px;font-size:12px;color:var(--soft);text-align:center;line-height:1.7}
+  .searchbar{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line-2);border-radius:13px;padding:11px 14px;margin:8px 0 12px}
+  .searchbar svg{width:18px;height:18px;color:var(--faint);flex:none}
+  .searchbar input{border:none;outline:none;background:none;font-family:var(--sans);font-size:14px;width:100%;color:var(--ink)}
+  .searchbar input::placeholder{color:var(--faint)}
+  .list-scroll{flex:1;overflow-y:auto;padding:2px 20px 18px}
+  .list-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 2px 2px}
+  .list-scroll::-webkit-scrollbar{width:0}
+  /* ===== BOOKING flow ===== */
+  .datebar{display:flex;gap:6px;margin-top:12px}
+  .dateopt{flex:1;padding:11px 4px;border:1.5px solid var(--line-2);border-radius:13px;text-align:center;cursor:pointer;font-size:14px;font-weight:700;color:var(--soft);transition:.14s}
+  .dateopt .d{font-size:11px;font-weight:500;color:var(--faint);display:block;margin-top:3px}
+  .dateopt.sel{border-color:var(--orange-500);background:var(--orange-wash);color:var(--orange-600)}
+  .dateopt.sel .d{color:var(--orange-500)}
+  .svc{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;padding:7px 0;color:var(--ink)}
+  .svc svg{width:18px;height:18px;color:var(--ok);flex:none;margin-top:1px}
+  .svc span{color:var(--faint);font-size:12px}
+  .optrow{display:flex;align-items:center;gap:12px;padding:2px 0}
+  .optrow .t b{font-size:14px;font-weight:700;display:block}
+  .optrow .t span{font-size:12px;color:var(--faint);display:block;margin-top:2px}
+  .addr{margin-top:12px;display:none}
+  .addr.show{display:block}
+  .addr input{width:100%;padding:12px 14px;border:1.5px solid var(--line-2);border-radius:12px;font-family:var(--sans);font-size:14px;outline:none;background:var(--paper)}
+  .addr input:focus{border-color:var(--orange-400)}
+  .stepper{display:flex;align-items:center;gap:16px;margin-left:auto}
+  .stepper button{width:30px;height:30px;border-radius:9px;border:1px solid var(--line-2);background:var(--card);font-size:17px;color:var(--soft);cursor:pointer;line-height:1}
+  .stepper .n{font-family:var(--mono);font-weight:700;font-size:15px;min-width:16px;text-align:center}
+  .pay-opt{display:flex;align-items:center;gap:11px;padding:14px 16px;border:1.5px solid var(--line-2);border-radius:14px;margin-top:10px;cursor:pointer;font-size:14px;font-weight:600;transition:.14s}
+  .pay-opt .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-2);flex:none}
+  .pay-opt.sel{border-color:var(--orange-500);background:var(--orange-wash)}
+  .pay-opt.sel .radio{border-color:var(--orange-500);background:radial-gradient(var(--orange-500) 42%,#fff 46%)}
+  .agree{display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;font-size:13px;color:var(--soft)}
+  .agree .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
+  .agree .box svg{width:14px;height:14px;opacity:0}
+  .agree.on .box{background:var(--orange-500);border-color:var(--orange-500)}
+  .agree.on .box svg{opacity:1}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:none;box-shadow:none}
+  .card-head{display:flex;align-items:center;justify-content:space-between}
+  .calbtn{width:32px;height:32px;border:1px solid var(--line-2);border-radius:9px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--soft);cursor:pointer}
+  .calbtn svg{width:17px;height:17px}
+  .cal-chosen{font-size:12.5px;color:var(--orange-600);font-weight:700;margin-top:10px}
+  .date-note{font-size:11.5px;color:var(--soft);margin-top:11px;line-height:1.5}
+  .date-note b{color:var(--orange-600)}
+  .modal .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-head span{font-size:15px;font-weight:800}
+  .cal-head button{width:32px;height:32px;border:none;background:none;font-size:20px;color:var(--soft);cursor:pointer}
+  .cal-week{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+  .cal-week span{text-align:center;font-size:11px;color:var(--faint);font-weight:600}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+  .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:9px;cursor:pointer;color:var(--ink)}
+  .cal-cell.empty{cursor:default}
+  .cal-cell.disabled{color:var(--line-2);cursor:not-allowed}
+  .cal-cell:not(.empty):not(.disabled):hover{background:var(--orange-wash)}
+  .cal-cell.sel{background:var(--orange-500);color:#fff}
+  .addr-results{max-height:170px;overflow-y:auto;margin:4px 0 10px;text-align:left}
+  .addr-res{padding:12px 4px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:600;cursor:pointer}
+  .addr-res:hover{color:var(--orange-600)}
+  .addr-res span{display:block;font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px}
+  .callrow{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:14px;padding:14px 16px;margin-top:12px;box-shadow:var(--e1);text-decoration:none;color:var(--ink)}
+  .callrow svg{width:20px;height:20px;color:var(--ok);flex:none}
+  .callrow b{font-size:14px;font-weight:700}
+  .callrow span{font-size:13px;color:var(--soft);margin-left:auto;font-family:var(--mono)}
+  .res-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .res-row:last-of-type{border-bottom:none}
+  .res-row .k{color:var(--faint)}
+  /* packages + term help */
+  .pkg{position:relative;background:var(--card);border:1.5px solid var(--line-2);border-radius:16px;padding:16px;margin-top:12px;cursor:pointer;transition:.15s}
+  .pkg.sel{border-color:var(--orange-500);background:var(--orange-wash)}
+  .pkg-top{display:flex;align-items:baseline;justify-content:space-between}
+  .pkg-top b{font-size:16px;font-weight:800}
+  .pkg-price{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--orange-600)}
+  .pkg-desc{font-size:12.5px;color:var(--soft);margin-top:7px;line-height:1.55}
+  .pkg-badge{position:absolute;top:-9px;left:14px;background:var(--orange-500);color:#fff;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px}
+  .custom-link{text-align:center;font-size:13px;font-weight:600;color:var(--soft);margin-top:14px;cursor:pointer;padding:6px}
+  .custom-link:hover{color:var(--orange-600)}
+  .qhelp{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--line-2);color:#fff;font-size:10px;font-weight:800;margin-left:4px;cursor:pointer;vertical-align:middle;font-style:normal}
+
+  /* DETAIL */
+  .qline{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .qline .amt{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .qline.total{border-bottom:none;padding-top:14px;font-weight:800;font-size:16px}
+  .qline.total .amt{color:var(--orange-600);font-size:19px}
+  .noextra{margin-top:12px;background:var(--ok-wash);border-radius:12px;padding:12px 14px;display:flex;gap:9px;align-items:center;font-size:13px;color:var(--ok);font-weight:600}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .slot{padding:11px 6px;text-align:center;border:1.5px solid var(--line-2);border-radius:11px;background:var(--card);
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--soft);transition:.14s}
+  .slot:hover{border-color:var(--orange-300)}
+  .slot.sel{border-color:var(--orange-500);background:var(--orange-500);color:#fff}
+  .slot.taken{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+
+  /* DONE */
+  .done-hero{text-align:center;padding:32px 6px 8px}
+  .check{width:74px;height:74px;margin:0 auto 18px;border-radius:50%;background:var(--ok-wash);display:flex;align-items:center;justify-content:center}
+  .check svg{width:38px;height:38px;stroke:var(--ok);stroke-width:2.5}
+  .done-hero h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .done-hero p{color:var(--soft);font-size:14px;margin-top:8px}
+  .summary .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .summary .row:last-child{border-bottom:none}
+  .summary .row .k{color:var(--faint)}
+  .summary .row .v{font-weight:600}
+  .ac-title{font-size:13px;font-weight:800;color:var(--faint);letter-spacing:.02em;margin:22px 2px 2px}
+  .ac{display:flex;gap:13px;align-items:flex-start;padding:15px 16px;margin-top:10px;border-radius:16px;background:var(--card);box-shadow:var(--e1);cursor:pointer;transition:.16s}
+  .ac:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+  .ac .ic{color:var(--orange-500);flex:none;margin-top:1px}
+  .ac b{display:block;font-size:14px;font-weight:700;margin-bottom:2px}
+  .ac span{color:var(--soft);font-size:12.5px}
+  .ac .arr{margin-left:auto;color:var(--faint);align-self:center}
+
+  /* MEMORIAL */
+  .mem-hero{text-align:center;padding:16px 6px 6px}
+  .frame{display:inline-block;background:#fff;padding:11px 11px 16px;border-radius:6px;box-shadow:0 16px 34px -16px rgba(58,30,12,.5);transform:rotate(-2.5deg)}
+  .frame .pic{width:180px;height:150px;border-radius:3px;background:#ece1d3;display:flex;align-items:center;justify-content:center;color:#c6b4a1}
+  .frame .pic svg{width:44px;height:44px;stroke-width:1.4}
+  .frame .cap{margin-top:11px;font-size:13px;color:var(--soft);font-weight:600}
+  .mem-name{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:22px}
+  .mem-years{color:var(--soft);font-size:14px;margin-top:4px}
+  .candle{margin-top:18px;display:flex;gap:10px;align-items:center;justify-content:center;background:var(--orange-wash);border-radius:14px;padding:13px;cursor:pointer;transition:.16s}
+  .candle:hover{background:var(--orange-tint)}
+  .candle .fl{font-size:20px;filter:saturate(1.2)}
+  .candle b{font-size:14px;color:var(--orange-600);font-weight:700}
+  .dday{margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+  .dday .l{font-size:13px;font-weight:600}
+  .dday .r{font-size:12px;color:var(--faint)}
+  .toggle{width:38px;height:22px;border-radius:999px;background:var(--line-2);position:relative;cursor:pointer;transition:.18s;flex:none;margin-left:auto}
+  .toggle.on{background:var(--orange-500)}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .toggle.on::after{left:19px}
+  .guest{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .guest:last-child{border-bottom:none}
+  .guest .av{width:30px;height:30px;flex:none;border-radius:50%;background:var(--orange-wash);color:var(--orange-600);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .guest .who{font-size:12.5px;font-weight:700}
+  .guest .msg{font-size:12.5px;color:var(--soft);margin-top:1px}
+  .qr-row{display:flex;gap:14px;align-items:center;margin-top:12px}
+  .qr-box{width:70px;height:70px;flex:none;border-radius:11px;padding:8px;background:#fff;box-shadow:var(--e1);
+    background-image:repeating-linear-gradient(90deg,var(--ink) 0 5px,transparent 5px 10px),repeating-linear-gradient(0deg,var(--ink) 0 5px,transparent 5px 10px);
+    background-size:100% 100%;background-clip:content-box}
+  .qr-txt b{font-size:13.5px}
+  .qr-txt p{font-size:12px;color:var(--soft);margin-top:2px}
+
+  /* PRENEED */
+  .pre-hero{padding:20px 2px 6px}
+  .plabel{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-top:20px;margin-bottom:4px}
+  .checklist{margin-top:6px}
+  .chk{display:flex;gap:12px;align-items:center;padding:13px 14px;margin-top:9px;border-radius:14px;background:var(--card);box-shadow:var(--e1);cursor:pointer;transition:.14s}
+  .chk .box{width:24px;height:24px;flex:none;border-radius:8px;border:1.5px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:#fff;transition:.14s}
+  .chk .box svg{width:14px;height:14px;opacity:0}
+  .chk.done .box{background:var(--ok);border-color:var(--ok)}
+  .chk.done .box svg{opacity:1}
+  .chk .t{font-size:13.5px;font-weight:600}
+  .chk.done .t{color:var(--faint);text-decoration:line-through}
+  .pre-est{margin-top:20px;background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--e1)}
+  .pre-est .rowb{display:flex;justify-content:space-between;align-items:baseline}
+  .pre-est .amt{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--orange-600)}
+  .pre-est .lock{margin-top:10px;display:flex;gap:7px;align-items:center;font-size:12px;color:var(--soft)}
+  .pre-est .lock svg{width:13px;height:13px;color:var(--ok)}
+
+  /* demo footer */
+  .demo-bar{margin-top:16px;display:flex;gap:6px;align-items:center;font-size:12px;color:#5c4d40;flex-wrap:wrap;justify-content:center;max-width:420px}
+  .demo-bar button{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--orange-600);background:#f4ece4;border:1px solid #ddcfc2;border-radius:8px;padding:6px 11px;cursor:pointer}
+  .demo-bar button:hover{background:#eee2d8}
+</style>
+</head>
+<body>
+
+<p class="demo-note">📱 <b>Diapet</b> 클릭 가능 프로토타입 · 온보딩 → 홈(선택지) → 흐름. 버튼을 눌러 따라가 보세요.</p>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status"><span>9:41</span><span class="dots">● ● ●  ▚▚</span></div>
+  <div class="screens">
+
+    <!-- ONBOARDING -->
+    <section class="screen active" id="s-onboard">
+      <img class="ob-img" src="../../img/onboarding_screen.png" alt="Diapet — 함께한 모든 순간을, 평화롭게" onclick="go('s-home')">
+    </section>
+
+    <!-- HOME (dashboard · 첫 사용자 상태) -->
+    <section class="screen" id="s-home">
+      <div class="home-top">
+        <img class="wm-logo" src="../../img/logo_diapet.png" alt="Diapet">
+        <span class="bell"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+      </div>
+      <div class="home-body">
+        <div class="home-hero">
+          <div class="hgreet">지금,<br>많이 힘드신가요?</div>
+          <div class="hgreet-sub">혼자가 아니에요.<br>Diapet이 차근차근 도와드릴게요.</div>
+        </div>
+
+        <div class="hero-ember" onclick="go('s-crisis')">
+          <div class="tx">
+            <h3>아이를 보내주려 해요</h3>
+            <p>지금 무엇을 해야 하는지<br>차근차근 안내해드릴게요.</p>
+          </div>
+          <img class="photo" src="../../img/pet_rest.png" alt="">
+        </div>
+
+        <div class="hsec">바로가기</div>
+        <div class="sgrid">
+          <div class="stile c1" onclick="go('s-list')"><svg class="i" viewBox="0 0 24 24"><path d="M4 21h16M6 21V9l6-4 6 4v12M10 21v-5h4v5"/></svg><b>장례 예약</b></div>
+          <div class="stile c2" onclick="go('s-preneed')"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V4a3 3 0 0 1 6 0v1"/><path d="M9 13l2 2 4-4"/></svg><b>사전 준비</b></div>
+          <div class="stile c3" onclick="go('s-memorial')"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg><b>추모 공간</b></div>
+          <div class="stile c4"><svg class="i" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/><path d="M9.2 10.6c.6-1 1.9-.6 2.3.2.4-.8 1.7-1.2 2.3-.2.6 1-.8 2.4-2.3 3.3-1.5-.9-2.9-2.3-2.3-3.3z"/></svg><b>펫로스 상담</b></div>
+        </div>
+
+        <div class="hfoot">언제든, 다시 찾아주세요. Diapet이 함께할게요.</div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab" onclick="go('s-list')"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>장례</div>
+        <div class="tab" onclick="go('s-memorial')"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab" onclick="go('s-my')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </section>
+
+    <!-- CRISIS (코드 · 타임라인) -->
+    <section class="screen" id="s-crisis">
+      <div class="cbar">
+        <div class="back" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <img class="cbar-logo" src="../../img/logo_diapet.png" alt="Diapet">
+        <span class="cnt">1 / 1</span>
+      </div>
+      <h1 class="crisis-title">지금 이대로 따라 하세요</h1>
+      <p class="crisis-sub">서두르지 않아도 괜찮습니다. 아이는 보통 <b>24~48시간</b> 안치가 가능해요.</p>
+      <p class="crisis-note">지금도, 충분히 잘하고 있어요.</p>
+
+      <div class="timeline">
+        <div class="tstep"><div class="tnum">1</div><div class="tcard"><div class="txt"><h4>편안하게 눕혀 주세요</h4><p>부드러운 수건·담요 위에 옆으로. 사후 1~2시간 안에 눈을 살며시 감겨주세요.</p></div><div class="ill"><img src="../../img/crisis_ill1.png" alt=""></div></div></div>
+        <div class="tstep"><div class="tnum">2</div><div class="tcard"><div class="txt"><h4>서늘한 곳에 안치</h4><p>직사광선을 피하고, 여름엔 배 쪽에 아이스팩(직접 닿지 않게)을 대주세요.</p></div><div class="ill"><img src="../../img/crisis_ill2.png" alt=""></div></div></div>
+        <div class="tstep"><div class="tnum">3</div><div class="tcard"><div class="txt"><h4>함께 보낼 것을 챙겨요</h4><p>좋아하던 담요·장난감, 생전 사진 몇 장. 마지막 인사를 준비하는 시간입니다.</p></div><div class="ill"><img src="../../img/crisis_ill3.png" alt=""></div></div></div>
+        <div class="tstep"><div class="tnum">4</div><div class="tcard"><div class="txt"><h4>믿을 수 있는 장례식장을 정해요</h4><p>가까운 정식 허가 업체를 확정 견적으로 바로 비교·예약할 수 있어요.</p></div><div class="ill"><img src="../../img/crisis_ill4.png" alt=""></div></div></div>
+      </div>
+
+      <div class="night">
+        <div class="h"><svg class="i" viewBox="0 0 24 24" width="15" height="15"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>새벽·야간인가요?</div>
+        <p>지금 예약해 두시면 <b>당일 오전</b> 첫 시간으로 잡아드려요. 24시간 상담도 연결됩니다.</p>
+      </div>
+
+      <div class="sticky-cta"><button class="btn primary" onclick="go('s-list')">이제 장례식장 찾기<svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+
+    <!-- QUOTE -->
+    <section class="screen" id="s-quote">
+      <div class="bar"><div class="back" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg></div><h2>견적 확인</h2><span class="step">1 / 2</span></div>
+      <p class="lede">몇 가지만 알려주시면 <b>부가세 포함 확정가</b>를 바로 보여드려요.</p>
+      <div class="field"><label>어떤 아이인가요?</label><div class="seg">
+        <div class="opt sel" data-g="species" onclick="pick(this)">강아지</div>
+        <div class="opt" data-g="species" onclick="pick(this)">고양이</div>
+        <div class="opt" data-g="species" onclick="pick(this)">그 외</div></div></div>
+      <div class="field"><label>몸무게 <span class="sub">· 화장 비용의 기준이 됩니다</span></label><div class="seg">
+        <div class="opt sel" data-g="weight" data-base="200000" onclick="pick(this,setEst)">~5kg<small>소형</small></div>
+        <div class="opt" data-g="weight" data-base="320000" onclick="pick(this,setEst)">5~15kg<small>중형</small></div>
+        <div class="opt" data-g="weight" data-base="480000" onclick="pick(this,setEst)">15kg~<small>대형</small></div></div></div>
+      <div class="field"><label>지역</label><div class="seg">
+        <div class="opt sel" data-g="region" onclick="pick(this)">서울·경기</div>
+        <div class="opt" data-g="region" onclick="pick(this)">인천</div>
+        <div class="opt" data-g="region" onclick="pick(this)">그 외</div></div></div>
+      <div class="field"><label>추모식 <span class="sub">· 선택</span></label><div class="seg">
+        <div class="opt sel" data-g="memorial" data-add="0" onclick="pick(this,setEst)">기본 화장</div>
+        <div class="opt" data-g="memorial" data-add="50000" onclick="pick(this,setEst)">추모식 포함<small>+5만</small></div></div></div>
+      <div class="est"><span class="l">예상 확정가 (부가세 포함)</span><span class="v" id="estVal">22.0<small>만원~</small></span></div>
+      <div class="sticky-cta"><button class="btn primary" onclick="go('s-list')">장례식장 3곳 보기<svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+
+    <!-- LIST (탭 안 · 하단 탭바 유지) -->
+    <section class="screen" id="s-list">
+      <div class="home-top"><img class="wm-logo" src="../../img/logo_diapet.png" alt="Diapet"></div>
+      <div class="list-scroll">
+      <h2 class="list-title">가까운 장례식장</h2>
+      <div class="searchbar"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="vsearch" type="text" placeholder="장례식장·지역 검색" oninput="filterVendors()"></div>
+      <p class="muted"><b>보리 · 중형(5~15kg)</b> 기준 확정가 · 모두 <b style="color:var(--ok)">정부 등록 검증</b> 완료</p>
+      <div class="vendor" onclick="go('s-detail')">
+        <div class="top"><div><h3>포레스트 추모원</h3><div class="dist">경기 광주 · 12km · 오늘 예약 가능</div></div>
+        <div class="price"><div class="amt" id="v1price">22.0만</div><div class="tax">부가세 포함</div></div></div>
+        <div class="badges"><span class="badge ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>등록 검증</span><span class="badge watch">참관 보장</span><span class="badge gold">강매 없음</span></div>
+        <div class="stars">★★★★★ <b>4.9 · 후기 312</b></div>
+      </div>
+      <div class="vendor" onclick="go('s-detail')">
+        <div class="top"><div><h3>무지개뜰 장례식장</h3><div class="dist">경기 남양주 · 18km · 오늘 예약 가능</div></div>
+        <div class="price"><div class="amt" id="v2price">24.5만</div><div class="tax">부가세 포함</div></div></div>
+        <div class="badges"><span class="badge ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>등록 검증</span><span class="badge watch">참관 보장</span></div>
+        <div class="stars">★★★★★ <b>4.8 · 후기 204</b></div>
+      </div>
+      <div class="vendor" onclick="go('s-detail')">
+        <div class="top"><div><h3>봄날 펫 세리머니</h3><div class="dist">인천 서구 · 26km · 내일 예약 가능</div></div>
+        <div class="price"><div class="amt" id="v3price">21.0만</div><div class="tax">부가세 포함</div></div></div>
+        <div class="badges"><span class="badge ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>등록 검증</span><span class="badge watch">참관 보장</span><span class="badge gold">강매 없음</span></div>
+        <div class="stars">★★★★☆ <b>4.7 · 후기 156</b></div>
+      </div>
+      <p class="list-note">🔒 정식 등록되지 않은 업체는 노출되지 않아요.<br>모든 업체의 허가번호를 실시간 대조합니다.</p>
+      </div>
+      <div class="tabbar">
+        <div class="tab" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>장례</div>
+        <div class="tab" onclick="go('s-memorial')"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab" onclick="go('s-my')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </section>
+
+    <!-- DETAIL (몰입형) -->
+    <section class="screen" id="s-detail">
+      <div class="bar"><div class="back" onclick="go('s-list')"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg></div><h2>포레스트 추모원</h2></div>
+      <div class="badges" style="display:flex;gap:6px;margin-bottom:2px">
+        <span class="badge ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>허가 제3941000-038호</span>
+        <span class="badge watch">전 과정 참관</span></div>
+      <div class="eyebrow" style="margin-top:18px">패키지 선택</div>
+      <div class="pkg sel" onclick="pickPkg(this)" data-base="220000" data-name="기본">
+        <div class="pkg-top"><b>기본</b><span class="pkg-price">22.0만</span></div>
+        <div class="pkg-desc">개별 화장<span class="qhelp" onclick="event.stopPropagation();termInfo('개별 화장','한 마리만 단독으로 화장하는 방식이에요. 유골을 온전히 받으실 수 있어요.')">?</span> · 유골함 · 부가세 포함</div>
+      </div>
+      <div class="pkg" onclick="pickPkg(this)" data-base="275000" data-name="추모식 포함">
+        <span class="pkg-badge">가장 많이 선택</span>
+        <div class="pkg-top"><b>추모식 포함</b><span class="pkg-price">27.5만</span></div>
+        <div class="pkg-desc">기본 + 추모실·추모식<span class="qhelp" onclick="event.stopPropagation();termInfo('추모식','떠나보내기 전, 추모실에서 갖는 마지막 인사 의식이에요.')">?</span></div>
+      </div>
+      <div class="pkg" onclick="pickPkg(this)" data-base="390000" data-name="프리미엄">
+        <div class="pkg-top"><b>프리미엄</b><span class="pkg-price">39.0만</span></div>
+        <div class="pkg-desc">추모식 + 봉안·수목장 안내<span class="qhelp" onclick="event.stopPropagation();termInfo('봉안·수목장','유골을 봉안당에 모시거나, 나무 아래 묻는 자연장이에요.')">?</span> + 고급 유골함</div>
+      </div>
+      <div class="noextra" style="margin-top:14px"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M20 6L9 17l-5-5"/></svg>표시 금액 그대로 청구돼요. 현장 추가금·강매 없음.</div>
+      <a class="callrow" href="tel:0310000038"><svg class="i" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg><b>전화 문의</b><span>031-000-0038</span></a>
+      <div class="sticky-cta"><button class="btn primary" onclick="go('s-booking')">예약하기<svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+
+    <!-- BOOKING (날짜·시간·운구·참관) -->
+    <section class="screen" id="s-booking">
+      <div class="bar"><div class="back" onclick="go('s-detail')"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg></div><h2>예약 설정</h2></div>
+      <div class="card">
+        <div class="card-head"><div class="eyebrow">날짜</div><div class="calbtn" onclick="openCal()"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div></div>
+        <div class="datebar">
+          <div class="dateopt sel" data-d="오늘 8/30" onclick="pickDate(this)">오늘<span class="d">8/30</span></div>
+          <div class="dateopt" data-d="내일 8/31" onclick="pickDate(this)">내일<span class="d">8/31</span></div>
+          <div class="dateopt" data-d="9/1(월)" onclick="pickDate(this)">월<span class="d">9/1</span></div>
+          <div class="dateopt" data-d="9/2(화)" onclick="pickDate(this)">화<span class="d">9/2</span></div>
+          <div class="dateopt" data-d="9/3(수)" onclick="pickDate(this)">수<span class="d">9/3</span></div>
+        </div>
+        <div class="cal-chosen" id="calChosen"></div>
+        <div class="date-note"><b>24~48시간 내</b> 예약을 권장해요 · 서늘한 곳 안치 시 최대 3~5일</div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">시간</div>
+        <div class="slots">
+          <div class="slot taken">10:00</div><div class="slot" onclick="pickSlot2(this)">13:00</div><div class="slot sel" onclick="pickSlot2(this)">15:00</div>
+          <div class="slot" onclick="pickSlot2(this)">17:00</div><div class="slot" onclick="pickSlot2(this)">19:00</div><div class="slot" onclick="pickSlot2(this)">20:30</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">운구(픽업)<span class="qhelp" onclick="termInfo('운구(픽업)','댁으로 방문해 아이를 장례식장까지 안전하게 모셔가는 서비스예요.')">?</span></div>
+        <div class="optrow" style="margin-top:8px"><div class="t"><b>방문 픽업 요청</b><span>지역별 요금 · 예약 후 안내</span></div><div class="toggle" id="trToggle" onclick="toggleTransport()"></div></div>
+        <div class="addr" id="trAddr"><input type="text" id="addrField" placeholder="주소 검색" readonly style="cursor:pointer" onclick="openAddr()"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">참관 인원<span class="qhelp" onclick="termInfo('참관','화장 전 과정을 보호자가 직접 지켜보는 거예요.')">?</span></div>
+        <div class="optrow" style="margin-top:8px"><div class="t"><b>참관하실 인원</b><span>전 과정 참관 가능</span></div>
+          <div class="stepper"><button onclick="stepViewers(-1)">–</button><span class="n" id="viewers">2</span><button onclick="stepViewers(1)">+</button></div></div>
+      </div>
+      <div class="sticky-cta"><button class="btn primary" onclick="toConfirm()">결제 단계로<svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+
+      <div class="modal-bg" id="calModal" hidden>
+        <div class="modal">
+          <div class="cal-head"><button onclick="calNav(-1)">‹</button><span id="calTitle"></span><button onclick="calNav(1)">›</button></div>
+          <div class="cal-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="modal-btns"><button class="btn ghost" onclick="closeCal()">닫기</button></div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="addrModal" hidden>
+        <div class="modal">
+          <h3>주소 검색</h3>
+          <input id="addrSearch" class="edit-input" type="text" placeholder="도로명·건물명·지번 검색" oninput="searchAddr()" autocomplete="off">
+          <div class="addr-results" id="addrResults"><p class="muted" style="text-align:center;padding:20px 0">주소를 검색해 주세요.</p></div>
+          <div class="modal-btns"><button class="btn ghost" onclick="closeAddr()">닫기</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIRM (결제) -->
+    <section class="screen" id="s-confirm">
+      <div class="bar"><div class="back" onclick="go('s-booking')"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg></div><h2>예약 확인 · 결제</h2></div>
+      <div class="card summary">
+        <div class="row"><span class="k">장례식장</span><span class="v">포레스트 추모원</span></div>
+        <div class="row"><span class="k">일시</span><span class="v" id="cf-when">오늘 15:00</span></div>
+        <div class="row"><span class="k">참관</span><span class="v" id="cf-viewers">2명</span></div>
+        <div class="row"><span class="k">운구</span><span class="v" id="cf-transport">신청 안 함</span></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">결제 금액</div>
+        <div style="margin-top:8px">
+          <div class="qline"><span id="cf-base-label">기본 패키지</span><span class="amt" id="cf-base-amt">220,000</span></div>
+          <div class="qline" id="cf-tr-line" hidden><span>운구(픽업)</span><span class="amt">30,000</span></div>
+          <div class="qline total"><span>총액</span><span class="amt" id="cf-total">220,000원</span></div>
+        </div>
+        <div class="noextra"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M20 6L9 17l-5-5"/></svg>표시 금액 그대로 청구돼요. 현장 추가금 없음.</div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">결제 수단</div>
+        <div class="pay-opt sel" onclick="pickPay(this)"><div class="radio"></div>카카오페이</div>
+        <div class="pay-opt" onclick="pickPay(this)"><div class="radio"></div>신용·체크카드</div>
+        <div class="pay-opt" onclick="pickPay(this)"><div class="radio"></div>현장 결제</div>
+      </div>
+      <div class="agree" id="agreeChk" onclick="toggleAgree()"><div class="box"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>결제 진행 및 개인정보 수집·이용에 동의합니다.</div>
+      <div class="sticky-cta"><button class="btn primary" id="confirmBtn" onclick="confirmBooking()" disabled>예약 확정 · <span id="cf-total2">220,000원</span></button></div>
+    </section>
+
+    <!-- DONE -->
+    <section class="screen" id="s-done">
+      <div class="done-hero">
+        <div class="check"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h1>예약이 확정되었어요</h1>
+        <p>포레스트 추모원 · 오늘 오후 3:00<br>천천히 오세요. 저희가 준비해 두겠습니다.</p>
+      </div>
+      <div class="card summary">
+        <div class="row"><span class="k">장례식장</span><span class="v">포레스트 추모원</span></div>
+        <div class="row"><span class="k">일시</span><span class="v" id="done-when">오늘 15:00</span></div>
+        <div class="row"><span class="k">확정 결제액</span><span class="v" id="done-amount">220,000원 (부가세 포함)</span></div>
+        <div class="row"><span class="k">참관</span><span class="v">전 과정 가능</span></div>
+      </div>
+      <div class="muted" style="margin-top:12px;display:flex;gap:7px;align-items:center"><svg class="i" viewBox="0 0 24 24" width="14" height="14" style="color:var(--orange-500)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>예약 확정 알림을 카카오톡으로 보내드렸어요.</div>
+
+      <div class="ac-title">장례 이후, 저희가 챙겨드릴게요</div>
+      <div class="ac">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24" width="19" height="19"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <div><b>동물등록 말소 신고 안내</b><span>사망 30일 이내 · 미신고 시 과태료. 정부24 바로가기를 보내드려요.</span></div>
+        <span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="ac">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24" width="19" height="19"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg></span>
+        <div><b>펫로스 심리 상담 (무료 1회)</b><span>혼자 견디지 않으셔도 됩니다. 전문 상담을 연결해 드려요.</span></div>
+        <span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="ac" onclick="go('s-memorial')">
+        <span class="ic"><svg class="i" viewBox="0 0 24 24" width="19" height="19"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span>
+        <div><b>디지털 추모 공간</b><span>기일 알림과 함께, 아이를 오래 기억할 공간을 만들어 드려요.</span></div>
+        <span class="arr"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M9 6l6 6-6 6"/></svg></span>
+      </div>
+      <div class="sticky-cta"><button class="btn ghost" onclick="go('s-home')">처음으로</button></div>
+    </section>
+
+    <!-- MEMORIAL (탭 안 · 로고 + 탭바) -->
+    <section class="screen" id="s-memorial">
+      <div class="home-top"><img class="wm-logo" src="../../img/logo_diapet.png" alt="Diapet"></div>
+      <div class="list-scroll">
+        <h2 class="list-title">추모 공간</h2>
+        <div class="mem-hero">
+          <div class="frame"><div class="pic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div><div class="cap">보리 · 2011–2026</div></div>
+          <div class="mem-name">보리를 기억하는 공간</div>
+          <div class="mem-years">함께한 15년 · 언제나 곁에 있을게</div>
+        </div>
+        <div class="candle" onclick="this.querySelector('b').textContent='촛불을 켰어요 · 1,204명이 함께'">
+          <span class="fl">🕯️</span><b>촛불 켜기 · 1,203명이 함께 기억해요</b>
+        </div>
+        <div class="card">
+          <div class="dday"><div><div class="l">기일 알림</div><div class="r">2027년 3월 14일 · 카톡으로 알려드려요</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">추모 메시지</div>
+          <div style="margin-top:10px">
+            <div class="guest"><div class="av">엄</div><div><div class="who">엄마</div><div class="msg">우리 보리, 무지개다리 건너서 아프지 말고 뛰어놀아.</div></div></div>
+            <div class="guest"><div class="av">이</div><div><div class="who">이모</div><div class="msg">보리야 이모가 많이 사랑했어. 편히 쉬어.</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">QR 추모석</div>
+          <div class="qr-row"><div class="qr-box"></div><div class="qr-txt"><b>유골함·추모석에 새겨진 QR</b><p>스캔하면 이 추모 공간이 열려요. 가족 누구나 함께 기억할 수 있어요.</p></div></div>
+        </div>
+        <button class="btn primary" style="margin-top:16px" onclick="this.textContent='공유 링크가 복사됐어요 ✓'">추모 공간 공유하기</button>
+      </div>
+      <div class="tabbar">
+        <div class="tab" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab" onclick="go('s-list')"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>장례</div>
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab" onclick="go('s-my')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </section>
+
+    <!-- PRENEED -->
+    <section class="screen" id="s-preneed">
+      <div class="bar"><div class="back" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24" width="17" height="17"><path d="M15 18l-6-6 6-6"/></svg></div><h2>미리 준비하기</h2></div>
+      <div class="pre-hero">
+        <span class="eyebrow">천천히, 마음의 준비부터</span>
+        <h1 class="big">그날이 오기 전에,<br>차분히 준비해 둘게요.</h1>
+        <p class="lede">노령·투병 중인 아이와의 남은 시간에 집중하실 수 있도록, 필요한 것들을 미리 정리해 드려요.</p>
+      </div>
+
+      <div class="plabel"><svg class="i" viewBox="0 0 24 24" width="16" height="16" style="color:var(--orange-500)"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>준비 체크리스트</div>
+      <div class="checklist">
+        <div class="chk done" onclick="this.classList.toggle('done')"><div class="box"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div class="t">아이 정보 등록 (종·나이·건강 상태)</div></div>
+        <div class="chk" onclick="this.classList.toggle('done')"><div class="box"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div class="t">믿을 수 있는 장례식장 미리 찜하기</div></div>
+        <div class="chk" onclick="this.classList.toggle('done')"><div class="box"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div class="t">함께 보낼 것 · 마지막 인사 준비</div></div>
+        <div class="chk" onclick="this.classList.toggle('done')"><div class="box"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div class="t">펫로스 상담 사전 안내 받기</div></div>
+      </div>
+
+      <div class="pre-est">
+        <div class="eyebrow">사전 확정 견적</div>
+        <div class="rowb" style="margin-top:8px"><span style="font-size:13.5px;color:var(--soft)">보리 · 중형(5~15kg) 기준</span><span class="amt">35.2만원~</span></div>
+        <div class="lock"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>지금 견적을 저장하면 가격이 오르기 전 금액으로 지켜드려요.</div>
+      </div>
+
+      <div class="card" style="display:flex;gap:12px;align-items:center">
+        <svg class="i" viewBox="0 0 24 24" width="22" height="22" style="color:var(--orange-500);flex:none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <div><b style="font-size:14px">정기 케어 알림</b><div class="muted" style="margin-top:2px">건강 변화 체크와 마음 준비를 부담 없이 도와드려요.</div></div>
+      </div>
+
+      <div class="sticky-cta"><button class="btn primary" onclick="go('s-home')">내 아이 정보 저장하기</button></div>
+    </section>
+
+    <!-- MY PAGE (코드) -->
+    <section class="screen" id="s-my">
+      <div class="my-scroll">
+        <div class="my-hero">
+          <div class="my-topbar">
+            <img class="wm-logo" src="../../img/logo_diapet.png" alt="Diapet">
+          </div>
+          <div class="my-greet">다연님,<br><b class="petname" id="petName">보리</b>와 함께라서<br>언제나 행복했어요.</div>
+        </div>
+        <div class="my-body">
+          <div class="segtabs">
+            <div class="segtab on" onclick="myTab(this,'pets')">내 아이</div>
+            <div class="segtab" onclick="myTab(this,'info')">내 정보</div>
+            <div class="segtab" onclick="myTab(this,'set')">설정</div>
+          </div>
+
+          <div class="mypanel" id="pane-pets">
+          <div class="petlist" id="petlist">
+            <div class="petcard sel" data-name="보리" onclick="openPetModal(this)">
+              <img class="pic" src="../../img/pet_bori.png" alt="보리">
+              <div class="info">
+                <div class="nm"><b>보리</b><span class="days">함께한 지 1,240일</span></div>
+                <div class="dt">2023. 4. 12. ~ 2026. 8. 30.</div>
+                <div class="meta">강아지 · 중형(5~15kg) · 서울</div>
+              </div>
+              <div class="pcheck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+              <div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div>
+            </div>
+            <div class="petcard" data-name="나비" onclick="openPetModal(this)">
+              <img class="pic" src="../../img/pet_nabi.png" alt="나비">
+              <div class="info">
+                <div class="nm"><b>나비</b><span class="days">함께한 지 2,980일</span></div>
+                <div class="dt">2018. 3. 2. ~ 2026. 5. 10.</div>
+                <div class="meta">고양이 · 소형(~5kg) · 서울</div>
+              </div>
+              <div class="pcheck"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+              <div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div>
+            </div>
+          </div>
+
+          <div class="addpet" onclick="openInfo('다른 아이 추가','새로운 아이를 등록할 수 있어요. 곧 제공됩니다.')">
+            <div class="plus"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+            <b>다른 아이 추가하기</b>
+            <div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div>
+          </div>
+
+          <div class="sec-h"><b>최근 이용 내역</b><span class="more" onclick="openInfo('전체 이용 내역','모든 이용 내역을 확인할 수 있어요.')">전체 보기<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          <div class="histlist">
+            <div class="histrow" onclick="openRes()"><div class="hi c-book"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div><div class="ht"><b>장례 예약</b><span>2026년 8월 30일 · 하늘펫 동물병원</span></div><div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+            <div class="histrow" onclick="go('s-memorial')"><div class="hi c-mem"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div><div class="ht"><b>추모 공간 생성</b><span>2026년 9월 1일</span></div><div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+            <div class="histrow" onclick="openInfo('동물등록 말소 안내','사망 30일 이내 신고 · 정부24 바로가기를 보내드려요.')"><div class="hi c-doc"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><div class="ht"><b>동물등록 말소 안내 확인</b><span>2026년 9월 2일</span></div><div class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></div></div>
+          </div>
+
+          <div class="sec-h"><b>도움이 필요하신가요?</b></div>
+          <div class="helpgrid">
+            <div class="helpcard" onclick="openInfo('펫로스 상담','전문 상담사와 대화를 연결해드려요. 혼자 견디지 않으셔도 됩니다.')"><div class="row1"><div class="hc c1"><svg class="i" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="14" width="4" height="6" rx="1.5"/><rect x="17.5" y="14" width="4" height="6" rx="1.5"/></svg></div><b>펫로스 상담</b></div><p>전문 상담사와 대화하기</p></div>
+            <div class="helpcard" onclick="openInfo('사후 안내','동물등록 말소 신고·필요 서류를 단계별로 안내해드려요.')"><div class="row1"><div class="hc c2"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><b>사후 안내</b></div><p>말소 신고, 필요 서류 등</p></div>
+            <div class="helpcard" onclick="openInfo('자주 묻는 질문','장례 절차·비용·참관 등 자주 묻는 질문을 모아뒀어요.')"><div class="row1"><div class="hc c3"><svg class="i" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg></div><b>자주 묻는 질문</b></div><p>궁금한 점을 확인해보세요</p></div>
+            <div class="helpcard" onclick="openInfo('의견 보내기','더 나은 서비스를 위해 의견을 들려주세요.')"><div class="row1"><div class="hc c4"><svg class="i" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg></div><b>의견 보내기</b></div><p>더 나은 서비스를 위해</p></div>
+          </div>
+
+          <div class="quote-band">
+            <div class="qt">
+              <h4>함께한 시간이<br>언제나 따뜻한 기억으로 남기를.</h4>
+              <p>Diapet이 늘 곁에 있을게요.</p>
+            </div>
+            <img class="qflower" src="../../img/my_flower.png" alt="">
+          </div>
+          </div><!-- /pane-pets -->
+
+          <div class="mypanel" id="pane-info" hidden>
+            <div class="sec-h"><b>내 정보</b></div>
+            <div class="infocard">
+              <div class="inforow" onclick="openEdit(this,'이름 수정')"><span class="k">이름</span><span class="v">김다연</span><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="inforow" onclick="openEdit(this,'연락처 수정')"><span class="k">연락처</span><span class="v">010-1234-5678</span><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="inforow" onclick="openSelect(this,'지역 선택',['서울','경기·인천','강원','충청','경북·대구','경남·부산·울산','전라·광주','제주'])"><span class="k">지역</span><span class="v">서울</span><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="inforow" onclick="openEdit(this,'이메일 수정')"><span class="k">이메일</span><span class="v">dayeon@diapet.kr</span><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+            </div>
+            <div class="sec-h"><b>내 아이 정보</b></div>
+            <div class="infocard">
+              <div class="inforow" onclick="openPetEdit(this,'보리 정보 수정')"><img class="mini" src="../../img/pet_bori.png" alt=""><div class="pt"><b>보리</b><span>강아지 · 중형(5~15kg) · 서울</span></div><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="inforow" onclick="openPetEdit(this,'나비 정보 수정')"><img class="mini" src="../../img/pet_nabi.png" alt=""><div class="pt"><b>나비</b><span>고양이 · 소형(~5kg) · 서울</span></div><span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+            </div>
+            <div class="sec-h"><b>알림</b></div>
+            <div class="infocard">
+              <div class="inforow"><span class="v">카카오 알림톡</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="inforow"><span class="v">기일 알림</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="inforow"><span class="v">이벤트·소식</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+
+          <div class="mypanel" id="pane-set" hidden>
+            <div class="sec-h"><b>설정</b></div>
+            <div class="infocard">
+              <div class="setrow" onclick="openInfo('공지사항','새로운 공지가 없어요.')">공지사항<span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="setrow" onclick="openInfo('자주 묻는 질문','궁금한 점을 모아뒀어요.')">자주 묻는 질문<span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="setrow" onclick="openInfo('서비스 이용약관','서비스 이용약관 문서로 이동합니다.')">서비스 이용약관<span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="setrow" onclick="openInfo('개인정보 처리방침','개인정보 처리방침 문서로 이동합니다.')">개인정보 처리방침<span class="chev"><svg class="i" viewBox="0 0 24 24" width="18" height="18"><path d="M9 6l6 6-6 6"/></svg></span></div>
+              <div class="setrow">버전 정보<span class="ver">v1.0.0</span></div>
+              <div class="setrow logout" onclick="openInfo('로그아웃','정말 로그아웃하시겠어요?')">로그아웃</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="petModal" hidden>
+        <div class="modal">
+          <img class="mpic" id="modalPic" src="../../img/pet_nabi.png" alt="">
+          <h3 id="modalTitle">보리를 나비로 전환할까요?</h3>
+          <p>선택한 아이 기준으로 정보가 표시돼요.</p>
+          <div class="modal-btns">
+            <button class="btn ghost" onclick="closePetModal()">취소</button>
+            <button class="btn primary" onclick="confirmPet()">전환</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="infoModal" hidden>
+        <div class="modal">
+          <h3 id="infoTitle"></h3>
+          <p id="infoBody"></p>
+          <div class="modal-btns"><button class="btn primary" onclick="closeInfo()">확인</button></div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="editModal" hidden>
+        <div class="modal">
+          <h3 id="editTitle"></h3>
+          <input id="editInput" class="edit-input" type="text" autocomplete="off">
+          <div class="modal-btns">
+            <button class="btn ghost" onclick="closeEdit()">취소</button>
+            <button class="btn primary" onclick="saveEdit()">저장</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="selectModal" hidden>
+        <div class="modal">
+          <h3 id="selectTitle"></h3>
+          <div class="sel-opts" id="selectOpts"></div>
+          <div class="modal-btns">
+            <button class="btn ghost" onclick="closeSelect()">취소</button>
+            <button class="btn primary" onclick="saveSelect()">저장</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="petEditModal" hidden>
+        <div class="modal">
+          <h3 id="petEditTitle">아이 정보 수정</h3>
+          <div class="pe-step" data-step="1"><label>종</label><div class="seg">
+            <div class="opt" data-g="pe-species" onclick="pick(this)">강아지</div>
+            <div class="opt" data-g="pe-species" onclick="pick(this)">고양이</div>
+            <div class="opt" data-g="pe-species" onclick="pick(this)">그 외</div></div></div>
+          <div class="pe-step" data-step="2" hidden><label>크기</label><div class="seg">
+            <div class="opt" data-g="pe-weight" data-val="소형(~5kg)" onclick="pick(this)">소형<small>~5kg</small></div>
+            <div class="opt" data-g="pe-weight" data-val="중형(5~15kg)" onclick="pick(this)">중형<small>5~15kg</small></div>
+            <div class="opt" data-g="pe-weight" data-val="대형(15kg~)" onclick="pick(this)">대형<small>15kg~</small></div></div></div>
+          <div class="pe-step" data-step="3" hidden><label>지역</label><div class="seg region-seg">
+            <div class="opt" data-g="pe-region" onclick="pick(this)">서울</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">경기·인천</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">강원</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">충청</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">경북·대구</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">경남·부산·울산</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">전라·광주</div>
+            <div class="opt" data-g="pe-region" onclick="pick(this)">제주</div></div></div>
+          <div class="pe-dots"><span class="pe-dot on"></span><span class="pe-dot"></span><span class="pe-dot"></span></div>
+          <div class="modal-btns">
+            <button class="btn ghost" id="peLeft" onclick="peLeftBtn()">취소</button>
+            <button class="btn primary" id="peRight" onclick="peRightBtn()">다음</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-bg" id="resModal" hidden>
+        <div class="modal">
+          <h3>예약 정보</h3>
+          <div class="res-row"><span class="k">장례식장</span><b>포레스트 추모원</b></div>
+          <div class="res-row"><span class="k">일시</span><b>2026. 8. 30. 15:00</b></div>
+          <div class="res-row"><span class="k">결제 금액</span><b>220,000원</b></div>
+          <div class="res-row"><span class="k">연락처</span><a href="tel:0310000038" style="color:var(--orange-600);font-weight:700;text-decoration:none">031-000-0038</a></div>
+          <div class="modal-btns" style="margin-top:18px">
+            <button class="btn ghost" onclick="closeRes()">닫기</button>
+            <button class="btn primary" onclick="reqChange()">변경 신청</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab" onclick="go('s-home')"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>홈</div>
+        <div class="tab" onclick="go('s-list')"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>장례</div>
+        <div class="tab" onclick="go('s-memorial')"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모</div>
+        <div class="tab on"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>마이</div>
+      </div>
+    </section>
+
+    <div class="modal-bg" id="termModal" hidden>
+      <div class="modal">
+        <h3 id="termTitle"></h3>
+        <p id="termBody"></p>
+        <div class="modal-btns"><button class="btn primary" onclick="closeTerm()">확인</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="demo-bar">
+  <span>데모:</span>
+  <button onclick="go('s-onboard')">온보딩</button>
+  <button onclick="go('s-home')">홈</button>
+  <button onclick="go('s-crisis')">긴급</button>
+  <button onclick="go('s-quote')">견적</button>
+  <button onclick="go('s-list')">비교</button>
+  <button onclick="go('s-detail')">상세</button>
+  <button onclick="go('s-booking')">예약설정</button>
+  <button onclick="go('s-confirm')">결제</button>
+  <button onclick="go('s-done')">완료</button>
+  <button onclick="go('s-memorial')">추모</button>
+  <button onclick="go('s-preneed')">사전준비</button>
+  <button onclick="go('s-my')">마이</button>
+</div>
+
+<script>
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    var el=document.getElementById(id); el.classList.add('active'); el.scrollTop=0;
+  }
+  function pick(elm,cb){
+    var g=elm.dataset.g;
+    document.querySelectorAll('[data-g="'+g+'"]').forEach(o=>o.classList.remove('sel'));
+    elm.classList.add('sel'); if(cb) cb();
+  }
+  function filterVendors(){
+    var q=document.getElementById('vsearch').value.trim();
+    document.querySelectorAll('#s-list .vendor').forEach(function(v){
+      v.style.display = (q==='' || v.textContent.indexOf(q)>-1) ? '' : 'none';
+    });
+  }
+  var booking={date:'오늘 8/30', time:'15:00', transport:false, viewers:2, agreed:false, base:220000, pkgName:'기본'};
+  function pickPkg(el){
+    document.querySelectorAll('#s-detail .pkg').forEach(function(p){p.classList.remove('sel');});
+    el.classList.add('sel'); booking.base=+el.dataset.base; booking.pkgName=el.dataset.name;
+  }
+  function termInfo(t,b){ document.getElementById('termTitle').textContent=t; document.getElementById('termBody').textContent=b; document.getElementById('termModal').hidden=false; }
+  function closeTerm(){ document.getElementById('termModal').hidden=true; }
+  function pickDate(el){ el.parentNode.querySelectorAll('.dateopt').forEach(function(d){d.classList.remove('sel');}); el.classList.add('sel'); booking.date=el.dataset.d; }
+  function pickSlot2(elm){ if(elm.classList.contains('taken'))return; elm.parentNode.querySelectorAll('.slot').forEach(function(s){s.classList.remove('sel');}); elm.classList.add('sel'); booking.time=elm.textContent.trim(); }
+  function toggleTransport(){ booking.transport=!booking.transport; document.getElementById('trToggle').classList.toggle('on',booking.transport); document.getElementById('trAddr').classList.toggle('show',booking.transport); }
+  function stepViewers(d){ booking.viewers=Math.max(1,Math.min(9,booking.viewers+d)); document.getElementById('viewers').textContent=booking.viewers; }
+  function bookingTotal(){ return booking.base + (booking.transport?30000:0); }
+  function toConfirm(){
+    document.getElementById('cf-when').textContent = booking.date+' '+booking.time;
+    document.getElementById('cf-viewers').textContent = booking.viewers+'명';
+    document.getElementById('cf-transport').textContent = booking.transport?'신청 (방문 픽업)':'신청 안 함';
+    document.getElementById('cf-base-label').textContent = booking.pkgName+' 패키지';
+    document.getElementById('cf-base-amt').textContent = booking.base.toLocaleString();
+    document.getElementById('cf-tr-line').hidden = !booking.transport;
+    var t=bookingTotal().toLocaleString()+'원';
+    document.getElementById('cf-total').textContent=t;
+    document.getElementById('cf-total2').textContent=t;
+    booking.agreed=false; document.getElementById('agreeChk').classList.remove('on'); document.getElementById('confirmBtn').disabled=true;
+    go('s-confirm');
+  }
+  function pickPay(el){ document.querySelectorAll('#s-confirm .pay-opt').forEach(function(p){p.classList.remove('sel');}); el.classList.add('sel'); }
+  function toggleAgree(){ booking.agreed=!booking.agreed; document.getElementById('agreeChk').classList.toggle('on',booking.agreed); document.getElementById('confirmBtn').disabled=!booking.agreed; }
+  function confirmBooking(){
+    document.getElementById('done-when').textContent = booking.date+' '+booking.time;
+    document.getElementById('done-amount').textContent = bookingTotal().toLocaleString()+'원 (부가세 포함)';
+    go('s-done');
+  }
+  /* 캘린더 모달 */
+  var calY, calM;
+  function openCal(){ var d=new Date(); calY=d.getFullYear(); calM=d.getMonth(); renderCal(); document.getElementById('calModal').hidden=false; }
+  function calNav(n){ calM+=n; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCal(); }
+  function renderCal(){
+    document.getElementById('calTitle').textContent = calY+'년 '+(calM+1)+'월';
+    var first=new Date(calY,calM,1).getDay(), days=new Date(calY,calM+1,0).getDate();
+    var t=new Date(); t.setHours(0,0,0,0);
+    var g=document.getElementById('calGrid'); g.innerHTML='';
+    for(var i=0;i<first;i++){ var e=document.createElement('span'); e.className='cal-cell empty'; g.appendChild(e); }
+    for(var day=1;day<=days;day++){
+      var c=document.createElement('span'); c.className='cal-cell'; c.textContent=day;
+      if(new Date(calY,calM,day)<t){ c.classList.add('disabled'); }
+      else { (function(dd){ c.onclick=function(){ pickCalDate(calM+1,dd); }; })(day); }
+      g.appendChild(c);
+    }
+  }
+  function pickCalDate(m,d){
+    booking.date=m+'/'+d;
+    document.querySelectorAll('#s-booking .dateopt').forEach(function(x){x.classList.remove('sel');});
+    var lbl=document.getElementById('calChosen'); if(lbl) lbl.textContent='선택한 날짜 · '+m+'/'+d;
+    closeCal();
+  }
+  function closeCal(){ document.getElementById('calModal').hidden=true; }
+  /* 주소 검색 (프로토타입 시뮬레이션 · 실제 앱은 카카오 우편번호 API) */
+  function openAddr(){
+    document.getElementById('addrModal').hidden=false;
+    document.getElementById('addrSearch').value='';
+    document.getElementById('addrResults').innerHTML='<p class="muted" style="text-align:center;padding:20px 0">주소를 검색해 주세요.</p>';
+    setTimeout(function(){ document.getElementById('addrSearch').focus(); },50);
+  }
+  function searchAddr(){
+    var q=document.getElementById('addrSearch').value.trim();
+    var box=document.getElementById('addrResults');
+    if(!q){ box.innerHTML='<p class="muted" style="text-align:center;padding:20px 0">주소를 검색해 주세요.</p>'; return; }
+    var sample=[{r:q+'로 12',j:'서울 강남구 '+q},{r:q+'로 45',j:'경기 성남시 분당구 '+q},{r:q+'대로 8',j:'서울 서초구 '+q}];
+    box.innerHTML='';
+    sample.forEach(function(a){ var d=document.createElement('div'); d.className='addr-res'; d.innerHTML=a.r+'<span>'+a.j+'</span>'; d.onclick=function(){ pickAddr(a.r); }; box.appendChild(d); });
+  }
+  function pickAddr(addr){ document.getElementById('addrField').value=addr; closeAddr(); }
+  function closeAddr(){ document.getElementById('addrModal').hidden=true; }
+  /* 마이 예약 정보 · 변경 신청 */
+  function openRes(){ document.getElementById('resModal').hidden=false; }
+  function closeRes(){ document.getElementById('resModal').hidden=true; }
+  function reqChange(){ closeRes(); openInfo('변경 신청 접수','예약 변경 요청이 접수되었어요. 담당자가 곧 연락드릴게요.'); }
+  function pickSlot(elm){
+    if(elm.classList.contains('taken')) return;
+    document.querySelectorAll('#s-detail .slot').forEach(s=>s.classList.remove('sel'));
+    elm.classList.add('sel');
+  }
+  function won(n){ return (n/10000).toFixed(1); }
+  function setEst(){
+    var base=+document.querySelector('[data-g="weight"].sel').dataset.base;
+    var add=+document.querySelector('[data-g="memorial"].sel').dataset.add;
+    var total=Math.round(base*1.1)+add;
+    document.getElementById('estVal').innerHTML=won(total)+'<small>만원~</small>';
+    document.getElementById('v1price').textContent=won(total)+'만';
+    document.getElementById('v2price').textContent=won(total+25000)+'만';
+    document.getElementById('v3price').textContent=won(total-10000)+'만';
+  }
+  var pendingPet=null;
+  function openPetModal(el){
+    if(el.classList.contains('sel')) return;
+    pendingPet=el;
+    var cur=document.querySelector('#petlist .petcard.sel');
+    var curName=cur?cur.dataset.name:'';
+    document.getElementById('modalTitle').innerHTML = curName+'를 <b>'+el.dataset.name+'</b>로 전환할까요?';
+    document.getElementById('modalPic').src = el.querySelector('.pic').src;
+    document.getElementById('petModal').hidden=false;
+  }
+  function closePetModal(){ document.getElementById('petModal').hidden=true; pendingPet=null; }
+  function confirmPet(){
+    if(pendingPet){
+      document.querySelectorAll('#petlist .petcard').forEach(p=>p.classList.remove('sel'));
+      pendingPet.classList.add('sel');
+      document.getElementById('petName').textContent = pendingPet.dataset.name;
+    }
+    closePetModal();
+  }
+  function myTab(el,name){
+    el.parentNode.querySelectorAll('.segtab').forEach(t=>t.classList.remove('on'));
+    el.classList.add('on');
+    ['pets','info','set'].forEach(n=>{ document.getElementById('pane-'+n).hidden = (n!==name); });
+  }
+  function openInfo(title, body){
+    document.getElementById('infoTitle').textContent = title;
+    document.getElementById('infoBody').textContent = body;
+    document.getElementById('infoModal').hidden = false;
+  }
+  function closeInfo(){ document.getElementById('infoModal').hidden = true; }
+  var editTarget=null;
+  function openEdit(row, title, sel){
+    editTarget = row.querySelector(sel||'.v');
+    document.getElementById('editTitle').textContent = title;
+    var inp=document.getElementById('editInput');
+    inp.value=''; inp.placeholder = editTarget ? editTarget.textContent : '';
+    document.getElementById('editModal').hidden=false;
+    setTimeout(function(){ inp.focus(); }, 50);
+  }
+  function closeEdit(){ document.getElementById('editModal').hidden=true; editTarget=null; }
+  function saveEdit(){
+    var inp=document.getElementById('editInput');
+    if(editTarget && inp.value.trim()) editTarget.textContent = inp.value.trim();
+    closeEdit();
+  }
+  var selTarget=null, selValue=null;
+  function openSelect(row, title, opts){
+    selTarget=row.querySelector('.v');
+    selValue=selTarget?selTarget.textContent.trim():'';
+    document.getElementById('selectTitle').textContent=title;
+    var box=document.getElementById('selectOpts'); box.innerHTML='';
+    opts.forEach(function(o){
+      var b=document.createElement('div');
+      b.className='sel-opt'+(o===selValue?' on':'');
+      b.textContent=o;
+      b.onclick=function(){ box.querySelectorAll('.sel-opt').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); selValue=o; };
+      box.appendChild(b);
+    });
+    document.getElementById('selectModal').hidden=false;
+  }
+  function closeSelect(){ document.getElementById('selectModal').hidden=true; selTarget=null; }
+  function saveSelect(){ if(selTarget&&selValue) selTarget.textContent=selValue; closeSelect(); }
+  var petMetaTarget=null, peStep=1;
+  function openPetEdit(row, title){
+    petMetaTarget=row.querySelector('.pt span');
+    document.getElementById('petEditTitle').textContent=title;
+    var parts=(petMetaTarget?petMetaTarget.textContent:'').split(' · ');
+    preselectSeg('pe-species', parts[0]); preselectSeg('pe-weight', parts[1]); preselectSeg('pe-region', parts[2]);
+    peStep=1; renderPeStep();
+    document.getElementById('petEditModal').hidden=false;
+  }
+  function renderPeStep(){
+    document.querySelectorAll('#petEditModal .pe-step').forEach(function(s){ s.hidden = (+s.dataset.step !== peStep); });
+    document.querySelectorAll('#petEditModal .pe-dot').forEach(function(d,i){ d.classList.toggle('on', i===peStep-1); });
+    document.getElementById('peLeft').textContent = (peStep===1)?'취소':'이전';
+    document.getElementById('peRight').textContent = (peStep===3)?'저장':'다음';
+  }
+  function peLeftBtn(){ if(peStep<=1){ closePetEdit(); } else { peStep--; renderPeStep(); } }
+  function peRightBtn(){ if(peStep>=3){ savePetEdit(); } else { peStep++; renderPeStep(); } }
+  function preselectSeg(g, val){
+    document.querySelectorAll('[data-g="'+g+'"]').forEach(function(o){ o.classList.toggle('sel', (o.dataset.val||o.textContent.trim())===(val||'').trim()); });
+  }
+  function closePetEdit(){ document.getElementById('petEditModal').hidden=true; petMetaTarget=null; }
+  function savePetEdit(){
+    if(petMetaTarget){
+      var s=document.querySelector('[data-g="pe-species"].sel'), w=document.querySelector('[data-g="pe-weight"].sel'), r=document.querySelector('[data-g="pe-region"].sel');
+      if(s&&w&&r) petMetaTarget.textContent=[(s.dataset.val||s.textContent.trim()),(w.dataset.val||w.textContent.trim()),(r.dataset.val||r.textContent.trim())].join(' · ');
+    }
+    closePetEdit();
+  }
+  setEst();
+</script>
+</body>
+</html>

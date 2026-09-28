@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diapet — 긴급 카드 후보</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  :root{
+    --orange-500:#F15A24;--orange-600:#D84816;--orange-400:#FF7A3D;--orange-300:#FFB088;
+    --orange-wash:#FFF0E8;--ember:#BE4718;--ember-wash:#FBE9E0;
+    --paper:#FDFAF6;--card:#FFFFFF;--ink:#241A14;--soft:#6B5D53;--faint:#9C8E83;--line-2:#E0D2C6;
+    --grad-e:linear-gradient(160deg,#D2571F 0%,#BE4718 100%);
+    --sans:"Pretendard",system-ui,"Malgun Gothic",sans-serif;
+    --e1:0 1px 2px rgba(58,30,12,.05),0 10px 28px -20px rgba(58,30,12,.35);
+    --e3:0 8px 20px -8px rgba(190,71,24,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e7ded4;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;padding:26px 16px 50px}
+  svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  h1{font-size:20px;font-weight:800;text-align:center;margin-bottom:6px}
+  .sub{text-align:center;color:#5c4d40;font-size:13px;margin-bottom:22px}
+  .col{max-width:390px;margin:0 auto;background:var(--paper);border-radius:20px;padding:18px;box-shadow:0 14px 40px -18px rgba(40,20,6,.4);margin-bottom:20px}
+  .tag{font-size:11.5px;font-weight:800;color:var(--ember);background:var(--ember-wash);padding:4px 10px;border-radius:999px;display:inline-block}
+  .cap{font-size:12.5px;color:var(--soft);margin:9px 2px 14px;line-height:1.5}
+
+  /* A. 소프트 앰버 */
+  .cA{background:var(--ember-wash);border-radius:20px;padding:19px;display:flex;align-items:center;gap:14px;cursor:pointer}
+  .cA .ic{color:var(--ember);flex:none}
+  .cA .ic svg{width:26px;height:26px}
+  .cA h3{font-size:17px;font-weight:800;color:var(--ember)}
+  .cA p{font-size:12.5px;color:#9a6a53;margin-top:3px}
+  .cA .arr{margin-left:auto;color:var(--ember);flex:none}
+
+  /* B. 담백 라인 */
+  .cB{background:var(--card);border-radius:18px;border-left:5px solid var(--ember);padding:18px 18px 18px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--e1)}
+  .cB h3{font-size:16.5px;font-weight:800;color:var(--ink)}
+  .cB p{font-size:12.5px;color:var(--soft);margin-top:3px}
+  .cB .arr{margin-left:auto;color:var(--ember);flex:none}
+
+  /* C. 그라데이션 정리 */
+  .cC{background:var(--grad-e);border-radius:20px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--e3);color:#fff}
+  .cC h3{font-size:17px;font-weight:800}
+  .cC p{font-size:12.5px;opacity:.92;margin-top:3px}
+  .cC .arr{margin-left:auto;flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center}
+
+  /* D. 아웃라인 */
+  .cD{background:var(--card);border:1.5px solid var(--ember);border-radius:20px;padding:19px;display:flex;align-items:center;gap:14px;cursor:pointer}
+  .cD .ic{color:var(--ember);flex:none}
+  .cD .ic svg{width:24px;height:24px}
+  .cD h3{font-size:17px;font-weight:800;color:var(--ember)}
+  .cD p{font-size:12.5px;color:var(--soft);margin-top:3px}
+  .cD .arr{margin-left:auto;color:var(--ember);flex:none}
+</style>
+</head>
+<body>
+  <h1>긴급 카드 후보 (홈 "아이를 보내주려 해요")</h1>
+  <p class="sub">크림 배경 위 실제 카드. 마음에 드는 안을 알려주세요.</p>
+
+  <div class="col">
+    <span class="tag">A · 소프트 앰버</span>
+    <div class="cap">연한 앰버 배경 + 진한 앰버 글씨. 덜 요란하고 따뜻함.</div>
+    <div class="cA">
+      <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+      <div><h3>아이를 보내주려 해요</h3><p>지금 무엇을 해야 하는지 차근차근 안내해드릴게요.</p></div>
+      <span class="arr"><svg class="i" viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="tag">B · 담백 라인</span>
+    <div class="cap">흰 카드 + 왼쪽 앰버 세로 바. 가장 담백, 박스 느낌 적음.</div>
+    <div class="cB">
+      <div><h3>아이를 보내주려 해요</h3><p>지금 무엇을 해야 하는지 차근차근 안내해드릴게요.</p></div>
+      <span class="arr"><svg class="i" viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="tag">C · 그라데이션 정리</span>
+    <div class="cap">앰버 그라데이션 유지, 아이콘 박스 제거 + 원형 화살표. (지금 것 정리판)</div>
+    <div class="cC">
+      <div><h3>아이를 보내주려 해요</h3><p>지금 무엇을 해야 하는지 차근차근 안내해드릴게요.</p></div>
+      <span class="arr"><svg class="i" viewBox="0 0 24 24" width="19" height="19"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+
+  <div class="col">
+    <span class="tag">D · 아웃라인</span>
+    <div class="cap">흰 카드 + 앰버 테두리·글씨. 채우지 않아 차분하되 또렷.</div>
+    <div class="cD">
+      <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span>
+      <div><h3>아이를 보내주려 해요</h3><p>지금 무엇을 해야 하는지 차근차근 안내해드릴게요.</p></div>
+      <span class="arr"><svg class="i" viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6"/></svg></span>
+    </div>
+  </div>
+</body>
+</html>
