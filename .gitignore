@@ -1,0 +1,17 @@
+# OMC 오케스트레이션 상태 (세션/런타임 산출물 — 버전관리 제외)
+.omc/
+**/.omc/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+
+# 임시
+*.tmp
+*.log
