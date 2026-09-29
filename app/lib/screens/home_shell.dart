@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../theme/app_typography.dart';
 import '../widgets/app_tab_bar.dart';
 import 'home_dashboard.dart';
 import 'memorial_screen.dart';
+import 'my_screen.dart';
 import 'vendor_list_screen.dart';
 
 /// 메인 탭 셸 — 홈/장례/추모/마이를 [IndexedStack]으로 유지 전환.
-///
-/// 각 탭 본문은 해당 기능 커밋에서 실제 화면으로 교체한다(현재 자리표시자).
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, this.initialTab = MainTab.home});
 
@@ -20,6 +18,8 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   late MainTab _current = widget.initialTab;
 
+  void _select(MainTab t) => setState(() => _current = t);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,32 +28,14 @@ class _HomeShellState extends State<HomeShell> {
         child: IndexedStack(
           index: MainTab.values.indexOf(_current),
           children: [
-            HomeDashboard(
-              onNavigateTab: (t) => setState(() => _current = t),
-            ),
+            HomeDashboard(onNavigateTab: _select),
             const VendorListScreen(),
             const MemorialScreen(),
-            const _TabPlaceholder(tab: MainTab.my),
+            MyScreen(onNavigateTab: _select),
           ],
         ),
       ),
-      bottomNavigationBar: AppTabBar(
-        current: _current,
-        onSelect: (t) => setState(() => _current = t),
-      ),
-    );
-  }
-}
-
-class _TabPlaceholder extends StatelessWidget {
-  const _TabPlaceholder({required this.tab});
-
-  final MainTab tab;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('${tab.label} (준비 중)', style: AppText.h2),
+      bottomNavigationBar: AppTabBar(current: _current, onSelect: _select),
     );
   }
 }

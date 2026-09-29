@@ -18,10 +18,11 @@ void main() {
     await tester.tap(find.text('시작하기'));
     await tester.pumpAndSettle();
 
-    // 홈 허브의 핵심 요소가 트리에 존재하는지(그리드는 뷰포트 밖일 수 있어 offstage 포함).
+    // 홈 허브의 핵심 요소(홈 탭에 유일).
     expect(find.text('아이를 보내주려 해요'), findsOneWidget);
     expect(find.text('바로가기'), findsOneWidget);
-    expect(find.text('장례 예약', skipOffstage: false), findsOneWidget);
+    // 바로가기 타일은 뷰포트 밖일 수 있어 offstage 포함해 존재만 확인.
+    expect(find.text('장례 예약', skipOffstage: false), findsWidgets);
   });
 
   testWidgets('홈 → 긴급 진입 CTA → 긴급 타임라인이 열린다', (tester) async {
@@ -131,5 +132,22 @@ void main() {
     // 체크 항목 토글이 예외 없이 동작한다.
     await tester.tap(find.text('믿을 수 있는 장례식장 미리 찜하기'));
     await tester.pump();
+  });
+
+  testWidgets('마이 탭 → 서브탭(설정) 전환', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('마이'));
+    await tester.pumpAndSettle();
+    expect(find.text('내 아이'), findsOneWidget);
+    expect(find.text('보리', skipOffstage: false), findsWidgets);
+
+    // 설정 서브탭으로 전환
+    await tester.tap(find.text('설정'));
+    await tester.pumpAndSettle();
+    expect(find.text('로그아웃', skipOffstage: false), findsOneWidget);
+    expect(find.text('v1.0.0', skipOffstage: false), findsOneWidget);
   });
 }
