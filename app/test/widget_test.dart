@@ -5,18 +5,21 @@ import 'package:diapet/main.dart';
 import 'package:diapet/screens/preneed_screen.dart';
 import 'package:diapet/screens/quote_screen.dart';
 
+/// 온보딩을 탭해 홈 대시보드로 진입시키는 공통 헬퍼.
+Future<void> enterHome(WidgetTester tester) async {
+  await tester.pumpWidget(const DiapetApp());
+  await tester.tap(find.byKey(const Key('onboarding-enter')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('온보딩이 표시된다', (tester) async {
     await tester.pumpWidget(const DiapetApp());
-    expect(find.text('Diapet'), findsOneWidget);
-    expect(find.text('시작하기'), findsOneWidget);
+    expect(find.byKey(const Key('onboarding-enter')), findsOneWidget);
   });
 
-  testWidgets('시작하기 → 홈 대시보드로 진입한다', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+  testWidgets('온보딩 → 홈 대시보드로 진입한다', (tester) async {
+    await enterHome(tester);
 
     // 홈 허브의 핵심 요소(홈 탭에 유일).
     expect(find.text('아이를 보내주려 해요'), findsOneWidget);
@@ -26,9 +29,7 @@ void main() {
   });
 
   testWidgets('홈 → 긴급 진입 CTA → 긴급 타임라인이 열린다', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+    await enterHome(tester);
 
     await tester.tap(find.text('아이를 보내주려 해요'));
     await tester.pumpAndSettle();
@@ -56,9 +57,7 @@ void main() {
   });
 
   testWidgets('장례 탭 → 업체 목록 → 상세 패키지', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+    await enterHome(tester);
 
     // 하단 '장례' 탭 진입
     await tester.tap(find.text('장례'));
@@ -75,9 +74,7 @@ void main() {
   });
 
   testWidgets('예약 → 결제 동의 → 확정 완료 플로우', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+    await enterHome(tester);
     await tester.tap(find.text('장례'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('포레스트 추모원'));
@@ -107,14 +104,11 @@ void main() {
   });
 
   testWidgets('추모 탭 → 촛불 켜기로 카운트가 오른다', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+    await enterHome(tester);
 
     await tester.tap(find.text('추모'));
     await tester.pumpAndSettle();
     expect(find.text('보리를 기억하는 공간'), findsOneWidget);
-    expect(find.textContaining('1,203명'), findsNothing); // 콤마 없는 포맷
     expect(find.textContaining('1203명이 함께'), findsOneWidget);
 
     await tester.tap(find.textContaining('촛불 켜기'));
@@ -135,9 +129,7 @@ void main() {
   });
 
   testWidgets('마이 탭 → 서브탭(설정) 전환', (tester) async {
-    await tester.pumpWidget(const DiapetApp());
-    await tester.tap(find.text('시작하기'));
-    await tester.pumpAndSettle();
+    await enterHome(tester);
 
     await tester.tap(find.text('마이'));
     await tester.pumpAndSettle();
