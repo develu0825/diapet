@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_typography.dart';
 import '../widgets/app_tab_bar.dart';
+import 'home_dashboard.dart';
 
 /// 메인 탭 셸 — 홈/장례/추모/마이를 [IndexedStack]으로 유지 전환.
 ///
@@ -25,7 +26,12 @@ class _HomeShellState extends State<HomeShell> {
         child: IndexedStack(
           index: MainTab.values.indexOf(_current),
           children: [
-            for (final tab in MainTab.values) _TabPlaceholder(tab: tab),
+            HomeDashboard(
+              onNavigateTab: (t) => setState(() => _current = t),
+            ),
+            const _TabPlaceholder(tab: MainTab.funeral),
+            const _TabPlaceholder(tab: MainTab.memorial),
+            const _TabPlaceholder(tab: MainTab.my),
           ],
         ),
       ),

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'app_routes.dart';
+import 'screens/coming_soon_screen.dart';
+import 'screens/home_shell.dart';
+import 'screens/onboarding_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -14,21 +18,14 @@ class DiapetApp extends StatelessWidget {
       title: 'Diapet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const _ThemePlaceholder(),
-    );
-  }
-}
-
-/// 라우팅·화면 이식 전까지 테마 확인용 임시 화면.
-class _ThemePlaceholder extends StatelessWidget {
-  const _ThemePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('Diapet', style: Theme.of(context).textTheme.displayLarge),
-      ),
+      initialRoute: Routes.onboarding,
+      routes: {
+        Routes.onboarding: (_) => const OnboardingScreen(),
+        Routes.homeShell: (_) => const HomeShell(),
+        // 아래는 각 기능 커밋에서 실제 화면으로 교체된다.
+        Routes.crisis: (_) => const ComingSoonScreen(title: '긴급 안내'),
+        Routes.preneed: (_) => const ComingSoonScreen(title: '사전 준비'),
+      },
     );
   }
 }
