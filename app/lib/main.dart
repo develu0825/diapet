@@ -3,12 +3,12 @@ import 'app_routes.dart';
 import 'models/booking_draft.dart';
 import 'models/vendor.dart';
 import 'screens/booking_screen.dart';
-import 'screens/coming_soon_screen.dart';
 import 'screens/confirm_screen.dart';
 import 'screens/crisis_screen.dart';
 import 'screens/done_screen.dart';
 import 'screens/home_shell.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/preneed_screen.dart';
 import 'screens/quote_screen.dart';
 import 'screens/vendor_detail_screen.dart';
 import 'screens/vendor_list_screen.dart';
@@ -36,8 +36,7 @@ class DiapetApp extends StatelessWidget {
         Routes.vendorList: (_) => const Scaffold(
               body: SafeArea(child: VendorListScreen(showBack: true)),
             ),
-        // 아래는 각 기능 커밋에서 실제 화면으로 교체된다.
-        Routes.preneed: (_) => const ComingSoonScreen(title: '사전 준비'),
+        Routes.preneed: (_) => const PreneedScreen(),
       },
       // 인자를 전달받는 플로우 라우트.
       onGenerateRoute: (settings) {

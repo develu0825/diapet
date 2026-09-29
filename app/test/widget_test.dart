@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:diapet/main.dart';
+import 'package:diapet/screens/preneed_screen.dart';
 import 'package:diapet/screens/quote_screen.dart';
 
 void main() {
@@ -118,5 +119,17 @@ void main() {
     await tester.tap(find.textContaining('촛불 켜기'));
     await tester.pump();
     expect(find.textContaining('촛불을 켰어요 · 1204명'), findsOneWidget);
+  });
+
+  testWidgets('사전 준비: 체크리스트와 사전 견적이 보인다', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: PreneedScreen()));
+
+    expect(find.text('준비 체크리스트'), findsOneWidget);
+    expect(find.text('아이 정보 등록 (종·나이·건강 상태)'), findsOneWidget);
+    expect(find.textContaining('35.2만원~', skipOffstage: false), findsOneWidget);
+
+    // 체크 항목 토글이 예외 없이 동작한다.
+    await tester.tap(find.text('믿을 수 있는 장례식장 미리 찜하기'));
+    await tester.pump();
   });
 }
