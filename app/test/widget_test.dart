@@ -71,4 +71,36 @@ void main() {
     expect(find.text('가장 많이 선택', skipOffstage: false), findsOneWidget);
     expect(find.text('예약하기', skipOffstage: false), findsOneWidget);
   });
+
+  testWidgets('예약 → 결제 동의 → 확정 완료 플로우', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('장례'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('포레스트 추모원'));
+    await tester.pumpAndSettle();
+
+    // 상세 → 예약 설정
+    await tester.tap(find.text('예약하기'));
+    await tester.pumpAndSettle();
+    expect(find.text('예약 설정'), findsOneWidget);
+
+    // 예약 설정 → 결제
+    await tester.tap(find.text('결제 단계로'));
+    await tester.pumpAndSettle();
+    expect(find.text('예약 확인 · 결제'), findsOneWidget);
+
+    // 동의 후 확정. (동의 행은 뷰포트 밖일 수 있어 스크롤로 노출)
+    final agree = find.textContaining('동의합니다');
+    await tester.scrollUntilVisible(agree, 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(agree);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('예약 확정'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('예약이 확정되었어요'), findsOneWidget);
+    expect(find.text('장례 이후, 저희가 챙겨드릴게요', skipOffstage: false), findsOneWidget);
+  });
 }
