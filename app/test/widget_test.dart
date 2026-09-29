@@ -103,4 +103,20 @@ void main() {
     expect(find.text('예약이 확정되었어요'), findsOneWidget);
     expect(find.text('장례 이후, 저희가 챙겨드릴게요', skipOffstage: false), findsOneWidget);
   });
+
+  testWidgets('추모 탭 → 촛불 켜기로 카운트가 오른다', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('추모'));
+    await tester.pumpAndSettle();
+    expect(find.text('보리를 기억하는 공간'), findsOneWidget);
+    expect(find.textContaining('1,203명'), findsNothing); // 콤마 없는 포맷
+    expect(find.textContaining('1203명이 함께'), findsOneWidget);
+
+    await tester.tap(find.textContaining('촛불 켜기'));
+    await tester.pump();
+    expect(find.textContaining('촛불을 켰어요 · 1204명'), findsOneWidget);
+  });
 }
