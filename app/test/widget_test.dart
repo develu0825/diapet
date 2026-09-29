@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:diapet/main.dart';
@@ -20,5 +19,18 @@ void main() {
     expect(find.text('아이를 보내주려 해요'), findsOneWidget);
     expect(find.text('바로가기'), findsOneWidget);
     expect(find.text('장례 예약', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('홈 → 긴급 진입 CTA → 긴급 타임라인이 열린다', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('아이를 보내주려 해요'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('지금 이대로 따라 하세요'), findsOneWidget);
+    expect(find.text('편안하게 눕혀 주세요', skipOffstage: false), findsOneWidget);
+    expect(find.text('이제 장례식장 찾기', skipOffstage: false), findsOneWidget);
   });
 }

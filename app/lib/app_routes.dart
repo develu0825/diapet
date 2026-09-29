@@ -7,6 +7,7 @@ abstract final class Routes {
   static const homeShell = '/home'; // s-home + 탭(장례/추모/마이)
   static const crisis = '/crisis'; // s-crisis (긴급 코드 타임라인)
   static const quote = '/quote'; // s-quote (견적)
+  static const vendorList = '/vendors'; // s-list (장례식장 비교) — 푸시 진입용
   static const vendorDetail = '/vendor'; // s-detail (업체 상세)
   static const booking = '/booking'; // s-booking (예약 설정)
   static const confirm = '/confirm'; // s-confirm (결제)
