@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:diapet/main.dart';
+import 'package:diapet/screens/quote_screen.dart';
 
 void main() {
   testWidgets('온보딩이 표시된다', (tester) async {
@@ -32,5 +34,22 @@ void main() {
     expect(find.text('지금 이대로 따라 하세요'), findsOneWidget);
     expect(find.text('편안하게 눕혀 주세요', skipOffstage: false), findsOneWidget);
     expect(find.text('이제 장례식장 찾기', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('견적: 몸무게·추모식 선택에 따라 확정가가 갱신된다', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: QuoteScreen()));
+
+    // 기본: 소형(20만) + 기본 화장(0) = 20.0
+    expect(find.textContaining('20.0'), findsOneWidget);
+
+    // 중형(32만) 선택 → 32.0
+    await tester.tap(find.text('5~15kg'));
+    await tester.pump();
+    expect(find.textContaining('32.0'), findsOneWidget);
+
+    // 추모식 포함(+5만) → 37.0
+    await tester.tap(find.text('추모식 포함'));
+    await tester.pump();
+    expect(find.textContaining('37.0'), findsOneWidget);
   });
 }

@@ -3,6 +3,7 @@ import 'app_routes.dart';
 import 'screens/coming_soon_screen.dart';
 import 'screens/crisis_screen.dart';
 import 'screens/home_shell.dart';
+import 'screens/quote_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -24,6 +25,7 @@ class DiapetApp extends StatelessWidget {
         Routes.onboarding: (_) => const OnboardingScreen(),
         Routes.homeShell: (_) => const HomeShell(),
         Routes.crisis: (_) => const CrisisScreen(),
+        Routes.quote: (_) => const QuoteScreen(),
         // 아래는 각 기능 커밋에서 실제 화면으로 교체된다.
         Routes.vendorList: (_) => const ComingSoonScreen(title: '장례식장 비교'),
         Routes.preneed: (_) => const ComingSoonScreen(title: '사전 준비'),

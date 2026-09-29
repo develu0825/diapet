@@ -43,7 +43,7 @@ class HomeDashboard extends StatelessWidget {
               )),
               const SizedBox(height: AppSpacing.sm),
               _QuickGrid(
-                onFuneral: () => onNavigateTab(MainTab.funeral),
+                onFuneral: () => Navigator.of(context).pushNamed(Routes.quote),
                 onMemorial: () => onNavigateTab(MainTab.memorial),
                 onPreneed: () =>
                     Navigator.of(context).pushNamed(Routes.preneed),
