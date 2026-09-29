@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_typography.dart';
 import '../widgets/app_tab_bar.dart';
 import 'home_dashboard.dart';
+import 'vendor_list_screen.dart';
 
 /// 메인 탭 셸 — 홈/장례/추모/마이를 [IndexedStack]으로 유지 전환.
 ///
@@ -29,7 +30,7 @@ class _HomeShellState extends State<HomeShell> {
             HomeDashboard(
               onNavigateTab: (t) => setState(() => _current = t),
             ),
-            const _TabPlaceholder(tab: MainTab.funeral),
+            const VendorListScreen(),
             const _TabPlaceholder(tab: MainTab.memorial),
             const _TabPlaceholder(tab: MainTab.my),
           ],

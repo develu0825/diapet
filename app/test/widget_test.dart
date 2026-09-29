@@ -52,4 +52,23 @@ void main() {
     await tester.pump();
     expect(find.textContaining('37.0'), findsOneWidget);
   });
+
+  testWidgets('장례 탭 → 업체 목록 → 상세 패키지', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    // 하단 '장례' 탭 진입
+    await tester.tap(find.text('장례'));
+    await tester.pumpAndSettle();
+    expect(find.text('가까운 장례식장'), findsOneWidget);
+    expect(find.text('포레스트 추모원'), findsOneWidget);
+
+    // 업체 카드 → 상세
+    await tester.tap(find.text('포레스트 추모원'));
+    await tester.pumpAndSettle();
+    expect(find.text('패키지 선택'), findsOneWidget);
+    expect(find.text('가장 많이 선택', skipOffstage: false), findsOneWidget);
+    expect(find.text('예약하기', skipOffstage: false), findsOneWidget);
+  });
 }
