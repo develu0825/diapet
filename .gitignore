@@ -15,3 +15,9 @@ desktop.ini
 # 임시
 *.tmp
 *.log
+
+# 사업 기밀 연구자료 — 퍼블릭 레포 제외 (로컬 백업: ../pet-private-research)
+# prototype/ 는 코드이므로 유지, 나머지 리서치 문서만 제외
+반려동물장례_리서치/*.md
+반려동물장례_리서치/*.html
+반려동물장례_리서치/*.pdf
