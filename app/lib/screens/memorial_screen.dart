@@ -5,6 +5,17 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/app_button.dart';
 
+/// 천 단위 콤마(예: 1203 → "1,203").
+String _grp(int n) {
+  final s = n.toString();
+  final buf = StringBuffer();
+  for (int i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+    buf.write(s[i]);
+  }
+  return buf.toString();
+}
+
 /// 추모 공간 (s-memorial) — 키프세이크형 추모 카드, 촛불, 기일 알림, 방명록, QR.
 ///
 /// DESIGN.md: 추모 컴포넌트는 "기능 카드"가 아니라 기억의 물건처럼. 따뜻한 톤 유지.
@@ -125,45 +136,40 @@ class _MemorialHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    // 프로토타입 .mem-hero: 세로 중앙 정렬 — 큰 폴라로이드 위, 이름은 아래 중앙.
+    return Column(
       children: [
-        // 폴라로이드형 프레임 — 그라데이션 플레이스홀더 대신 실사진.
         Transform.rotate(
-          angle: -0.043,
+          angle: -0.0436, // -2.5deg
           child: Container(
-            padding: const EdgeInsets.fromLTRB(7, 7, 7, 11),
+            padding: const EdgeInsets.fromLTRB(11, 11, 11, 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(6),
               boxShadow: const [BoxShadow(
-                color: Color.fromRGBO(58, 30, 12, 0.4),
-                offset: Offset(0, 10), blurRadius: 22, spreadRadius: -12)],
+                color: Color.fromRGBO(58, 30, 12, 0.5),
+                offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
             ),
             child: Column(
               children: [
+                // 그라데이션 플레이스홀더 대신 실사진(DESIGN.md).
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(3),
                   child: Image.asset(AppAssets.petBori,
-                      width: 80, height: 66, fit: BoxFit.cover),
+                      width: 190, height: 150, fit: BoxFit.cover),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 11),
                 Text('보리 · 2011–2026', style: AppText.caption.copyWith(
-                    fontSize: 10, color: AppColors.soft)),
+                    fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.md),
-        const Expanded(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('보리를 기억하는 공간', style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.2)),
-            SizedBox(height: 4),
-            Text('함께한 15년 · 언제나 곁에 있을게',
-                style: TextStyle(fontSize: 12.5, color: AppColors.soft)),
-          ],
-        )),
+        const SizedBox(height: 22),
+        Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
+        const SizedBox(height: 4),
+        Text('함께한 15년 · 언제나 곁에 있을게',
+            style: AppText.body.copyWith(fontSize: 14, color: AppColors.soft)),
       ],
     );
   }
@@ -189,10 +195,12 @@ class _Candle extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🕯️', style: TextStyle(fontSize: 18)),
+            const Text('🕯️', style: TextStyle(fontSize: 20)),
             const SizedBox(width: AppSpacing.xs),
             Flexible(child: Text(
-              lit ? '촛불을 켰어요 · $count명이 함께' : '촛불 켜기 · $count명이 함께 기억해요',
+              lit
+                  ? '촛불을 켰어요 · ${_grp(count)}명이 함께'
+                  : '촛불 켜기 · ${_grp(count)}명이 함께 기억해요',
               style: AppText.bodyStrong.copyWith(color: AppColors.orange600, fontSize: 14),
             )),
           ],
@@ -215,7 +223,7 @@ class _Guest extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 15,
-          backgroundColor: AppColors.orangeTint,
+          backgroundColor: AppColors.orangeWash,
           child: Text(initial, style: const TextStyle(
               fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.orange600)),
         ),

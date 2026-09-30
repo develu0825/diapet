@@ -109,11 +109,11 @@ void main() {
     await tester.tap(find.text('추모'));
     await tester.pumpAndSettle();
     expect(find.text('보리를 기억하는 공간'), findsOneWidget);
-    expect(find.textContaining('1203명이 함께'), findsOneWidget);
+    expect(find.textContaining('1,203명이 함께'), findsOneWidget);
 
     await tester.tap(find.textContaining('촛불 켜기'));
     await tester.pump();
-    expect(find.textContaining('촛불을 켰어요 · 1204명'), findsOneWidget);
+    expect(find.textContaining('촛불을 켰어요 · 1,204명'), findsOneWidget);
   });
 
   testWidgets('사전 준비: 체크리스트와 사전 견적이 보인다', (tester) async {
