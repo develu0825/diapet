@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -31,7 +34,20 @@ class _MemorialScreenState extends State<MemorialScreen> {
   bool _anniversaryAlarm = true;
   bool _shared = false;
 
+  final _picker = ImagePicker();
+  File? _photo; // 사용자가 갤러리에서 고른 추모 사진
+
   int get _candleCount => _candleLit ? 1204 : 1203;
+
+  Future<void> _pickPhoto() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked != null && mounted) {
+      setState(() => _photo = File(picked.path));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +64,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
             children: [
               Text('추모 공간', style: AppText.h2),
               const SizedBox(height: AppSpacing.md),
-              const _MemorialHero(),
+              _MemorialHero(photo: _photo, onPickPhoto: _pickPhoto),
               const SizedBox(height: AppSpacing.md),
               _Candle(
                 lit: _candleLit,
@@ -132,39 +148,56 @@ class _MemorialScreenState extends State<MemorialScreen> {
 }
 
 class _MemorialHero extends StatelessWidget {
-  const _MemorialHero();
+  const _MemorialHero({required this.photo, required this.onPickPhoto});
+
+  final File? photo;
+  final VoidCallback onPickPhoto;
 
   @override
   Widget build(BuildContext context) {
+    // 갤러리에서 고른 사진이 있으면 그걸, 없으면 기본 사진(꽉 찬 사각)을 넣는다.
+    final Widget photoImage = photo != null
+        ? Image.file(photo!, width: 198, height: 232, fit: BoxFit.cover)
+        : Image.asset(AppAssets.petRest, width: 198, height: 232, fit: BoxFit.cover);
+
     // 프로토타입 .mem-hero: 세로 중앙 정렬 — 큰 폴라로이드 위, 이름은 아래 중앙.
     return Column(
       children: [
-        Transform.rotate(
-          angle: -0.0436, // -2.5deg
-          child: Container(
-            // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
-            padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6),
-              boxShadow: const [BoxShadow(
-                color: Color.fromRGBO(58, 30, 12, 0.5),
-                offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
-            ),
-            child: Column(
-              children: [
-                // 세로형 폴라로이드 비율의 실사진(DESIGN.md: 그라데이션 플레이스홀더 대신).
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: Image.asset(AppAssets.petBori,
-                      width: 198, height: 232, fit: BoxFit.cover),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Transform.rotate(
+              angle: -0.0436, // -2.5deg
+              child: Container(
+                // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
+                padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: const [BoxShadow(
+                    color: Color.fromRGBO(58, 30, 12, 0.5),
+                    offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
                 ),
-                const SizedBox(height: 12),
-                Text('보리 · 2011–2026', style: AppText.caption.copyWith(
-                    fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
-              ],
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: photoImage,
+                    ),
+                    const SizedBox(height: 12),
+                    Text('보리 · 2011–2026', style: AppText.caption.copyWith(
+                        fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
             ),
-          ),
+            // 폴라로이드 오른쪽 아래 모서리의 사진 추가(카메라) 버튼.
+            Positioned(
+              right: -6,
+              bottom: 26,
+              child: _CameraButton(onTap: onPickPhoto),
+            ),
+          ],
         ),
         const SizedBox(height: 22),
         Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
@@ -172,6 +205,32 @@ class _MemorialHero extends StatelessWidget {
         Text('함께한 15년 · 언제나 곁에 있을게',
             style: AppText.body.copyWith(fontSize: 14, color: AppColors.soft)),
       ],
+    );
+  }
+}
+
+/// 폴라로이드 모서리의 원형 카메라 버튼 — 누르면 갤러리에서 사진 선택.
+class _CameraButton extends StatelessWidget {
+  const _CameraButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.orange500,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+          boxShadow: const [BoxShadow(
+            color: Color.fromRGBO(58, 30, 12, 0.3),
+            offset: Offset(0, 4), blurRadius: 10, spreadRadius: -2)],
+        ),
+        child: const Icon(Icons.photo_camera, size: 19, color: Colors.white),
+      ),
     );
   }
 }
