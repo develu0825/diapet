@@ -142,7 +142,8 @@ class _MemorialHero extends StatelessWidget {
         Transform.rotate(
           angle: -0.0436, // -2.5deg
           child: Container(
-            padding: const EdgeInsets.fromLTRB(11, 11, 11, 16),
+            // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
+            padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(6),
@@ -152,13 +153,13 @@ class _MemorialHero extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // 그라데이션 플레이스홀더 대신 실사진(DESIGN.md).
+                // 세로형 폴라로이드 비율의 실사진(DESIGN.md: 그라데이션 플레이스홀더 대신).
                 ClipRRect(
                   borderRadius: BorderRadius.circular(3),
                   child: Image.asset(AppAssets.petBori,
-                      width: 190, height: 150, fit: BoxFit.cover),
+                      width: 198, height: 232, fit: BoxFit.cover),
                 ),
-                const SizedBox(height: 11),
+                const SizedBox(height: 12),
                 Text('보리 · 2011–2026', style: AppText.caption.copyWith(
                     fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
               ],
