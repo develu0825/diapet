@@ -8,7 +8,7 @@ import 'app_colors.dart';
 /// [fontFamily]만 'Pretendard'로 교체하면 된다.
 /// letterSpacing은 em→px 환산값(em * fontSize)을 사용한다.
 abstract final class AppText {
-  static const String? fontFamily = null; // TODO: 'Pretendard' (폰트 번들 후)
+  static const String fontFamily = 'Pretendard'; // assets/fonts/ 번들
   static const String monoFamily = 'monospace'; // 금액·시간 (SF Mono/Consolas 계열)
 
   static const display = TextStyle(
