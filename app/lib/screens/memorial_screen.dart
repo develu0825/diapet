@@ -35,17 +35,14 @@ class _MemorialScreenState extends State<MemorialScreen> {
   bool _shared = false;
 
   final _picker = ImagePicker();
-  File? _photo; // 사용자가 갤러리에서 고른 추모 사진
+  final List<File> _photos = []; // 갤러리에서 고른 추모 사진들(스와이프로 넘김)
 
   int get _candleCount => _candleLit ? 1204 : 1203;
 
-  Future<void> _pickPhoto() async {
-    final picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (picked != null && mounted) {
-      setState(() => _photo = File(picked.path));
+  Future<void> _addPhotos() async {
+    final picked = await _picker.pickMultiImage(imageQuality: 85);
+    if (picked.isNotEmpty && mounted) {
+      setState(() => _photos.addAll(picked.map((x) => File(x.path))));
     }
   }
 
@@ -55,7 +52,12 @@ class _MemorialScreenState extends State<MemorialScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 14, AppSpacing.lg, 6),
-          child: Row(children: [Image.asset(AppAssets.logoDiapet, height: 27)]),
+          child: Row(children: [
+            Image.asset(AppAssets.logoDiapet, height: 27),
+            const Spacer(),
+            // 화면 오른쪽 상단: 추모 사진 추가(여러 장 선택).
+            _AddPhotoButton(onTap: _addPhotos),
+          ]),
         ),
         Expanded(
           child: ListView(
@@ -64,7 +66,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
             children: [
               Text('추모 공간', style: AppText.h2),
               const SizedBox(height: AppSpacing.md),
-              _MemorialHero(photo: _photo, onPickPhoto: _pickPhoto),
+              _MemorialHero(photos: _photos),
               const SizedBox(height: AppSpacing.md),
               _Candle(
                 lit: _candleLit,
@@ -148,56 +150,37 @@ class _MemorialScreenState extends State<MemorialScreen> {
 }
 
 class _MemorialHero extends StatelessWidget {
-  const _MemorialHero({required this.photo, required this.onPickPhoto});
+  const _MemorialHero({required this.photos});
 
-  final File? photo;
-  final VoidCallback onPickPhoto;
+  final List<File> photos;
 
   @override
   Widget build(BuildContext context) {
-    // 갤러리에서 고른 사진이 있으면 그걸, 없으면 기본 사진(꽉 찬 사각)을 넣는다.
-    final Widget photoImage = photo != null
-        ? Image.file(photo!, width: 198, height: 232, fit: BoxFit.cover)
-        : Image.asset(AppAssets.petRest, width: 198, height: 232, fit: BoxFit.cover);
-
     // 프로토타입 .mem-hero: 세로 중앙 정렬 — 큰 폴라로이드 위, 이름은 아래 중앙.
     return Column(
       children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Transform.rotate(
-              angle: -0.0436, // -2.5deg
-              child: Container(
-                // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
-                padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: const [BoxShadow(
-                    color: Color.fromRGBO(58, 30, 12, 0.5),
-                    offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
-                ),
-                child: Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: photoImage,
-                    ),
-                    const SizedBox(height: 12),
-                    Text('보리 · 2011–2026', style: AppText.caption.copyWith(
-                        fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
+        Transform.rotate(
+          angle: -0.0436, // -2.5deg
+          child: Container(
+            // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
+            padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: const [BoxShadow(
+                color: Color.fromRGBO(58, 30, 12, 0.5),
+                offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
             ),
-            // 폴라로이드 오른쪽 아래 모서리의 사진 추가(카메라) 버튼.
-            Positioned(
-              right: 2,
-              bottom: 8,
-              child: _CameraButton(onTap: onPickPhoto),
+            child: Column(
+              children: [
+                // 여러 장을 좌우 스와이프로 넘기는 폴라로이드 사진.
+                _PhotoPager(photos: photos),
+                const SizedBox(height: 12),
+                Text('보리 · 2011–2026', style: AppText.caption.copyWith(
+                    fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
+              ],
             ),
-          ],
+          ),
         ),
         const SizedBox(height: 22),
         Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
@@ -209,27 +192,105 @@ class _MemorialHero extends StatelessWidget {
   }
 }
 
-/// 폴라로이드 모서리의 원형 카메라 버튼 — 누르면 갤러리에서 사진 선택.
-class _CameraButton extends StatelessWidget {
-  const _CameraButton({required this.onTap});
+/// 폴라로이드 사진 — 여러 장을 좌우 스와이프로 넘기고 하단에 점 인디케이터.
+class _PhotoPager extends StatefulWidget {
+  const _PhotoPager({required this.photos});
+  final List<File> photos;
+
+  @override
+  State<_PhotoPager> createState() => _PhotoPagerState();
+}
+
+class _PhotoPagerState extends State<_PhotoPager> {
+  final _controller = PageController();
+  int _index = 0;
+
+  static const double _w = 198;
+  static const double _h = 232;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final photos = widget.photos;
+    final count = photos.isEmpty ? 1 : photos.length;
+    // 사진이 줄어 현재 인덱스가 벗어나면 보정.
+    final current = _index.clamp(0, count - 1);
+
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: SizedBox(
+            width: _w,
+            height: _h,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: count,
+              onPageChanged: (i) => setState(() => _index = i),
+              itemBuilder: (context, i) {
+                if (photos.isEmpty) {
+                  return Image.asset(AppAssets.petRest, fit: BoxFit.cover);
+                }
+                return Image.file(photos[i], fit: BoxFit.cover);
+              },
+            ),
+          ),
+        ),
+        if (count > 1) ...[
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (int i = 0; i < count; i++)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: i == current ? 16 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: i == current ? AppColors.orange500 : AppColors.line2,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// 화면 오른쪽 상단의 사진 추가 버튼(회색) — 갤러리에서 여러 장 선택.
+class _AddPhotoButton extends StatelessWidget {
+  const _AddPhotoButton({required this.onTap});
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: Container(
-        width: 30,
-        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
         decoration: BoxDecoration(
-          color: AppColors.soft, // 회색(웜 그레이)
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-          boxShadow: const [BoxShadow(
-            color: Color.fromRGBO(58, 30, 12, 0.25),
-            offset: Offset(0, 3), blurRadius: 8, spreadRadius: -2)],
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          border: Border.all(color: AppColors.line2),
         ),
-        child: const Icon(Icons.photo_camera, size: 14, color: Colors.white),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.add_a_photo_outlined, size: 16, color: AppColors.soft),
+            const SizedBox(width: 6),
+            Text('사진 추가', style: AppText.caption.copyWith(
+                color: AppColors.soft, fontWeight: FontWeight.w700)),
+          ],
+        ),
       ),
     );
   }
