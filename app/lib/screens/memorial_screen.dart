@@ -204,13 +204,49 @@ class _PolaroidCarousel extends StatefulWidget {
   State<_PolaroidCarousel> createState() => _PolaroidCarouselState();
 }
 
-class _PolaroidCarouselState extends State<_PolaroidCarousel> {
-  int _index = 0; // 맨 앞(메인) 사진의 인덱스. 좌우 스와이프로 순환.
+class _PolaroidCarouselState extends State<_PolaroidCarousel>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 340),
+  );
+
+  double _page = 0; // 연속 위치(소수 = 넘기는 중). 정수에 안착.
+  double _from = 0, _to = 0;
+
+  static const _dragUnit = 230.0; // 한 장 넘기는 데 필요한 드래그 거리
+  static const _spacing = 64.0; // 겹친 카드 간 가로 간격(뒷 사진이 더 보이도록 넓힘)
+
+  @override
+  void initState() {
+    super.initState();
+    _anim.addListener(() {
+      final t = Curves.easeOutCubic.transform(_anim.value);
+      setState(() => _page = _from + (_to - _from) * t);
+    });
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  void _settle(double velocity) {
+    var target = _page.round();
+    if (velocity < -350) {
+      target = _page.floor() + 1;
+    } else if (velocity > 350) {
+      target = _page.ceil() - 1;
+    }
+    _from = _page;
+    _to = target.toDouble();
+    _anim.forward(from: 0);
+  }
 
   ImageProvider _img(List<File> photos, int i) =>
       photos.isEmpty ? AssetImage(AppAssets.petRest) : FileImage(photos[i]);
 
-  // 겹쳐 쌓인 폴라로이드 한 장(가로 이동 + 축소 + 기울기).
   Widget _stackCard(
     ImageProvider img, {
     required double dx,
@@ -238,37 +274,43 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel> {
       return _EmptyPolaroid(onTap: widget.onAddPhoto);
     }
     final count = photos.length;
-    final cur = _index % count;
-    final left = (cur - 1 + count) % count;
-    final right = (cur + 1) % count;
+    final base = _page.round();
+
+    // 현재 위치 주변 카드를 연속 위치로 배치 → 드래그를 따라 부드럽게.
+    final entries = <(int, double)>[]; // (정수 인덱스, 가운데 기준 상대 위치)
+    for (var o = -2; o <= 2; o++) {
+      final idx = base + o;
+      final rel = idx - _page;
+      if (rel.abs() > 1.6) continue;
+      entries.add((idx, rel));
+    }
+    // 멀리 있는 것부터 그려서 가까운(가운데) 카드가 맨 위에 오게.
+    entries.sort((a, b) => b.$2.abs().compareTo(a.$2.abs()));
+    final cards = <Widget>[];
+    for (final (idx, rel) in entries) {
+      final photo = ((idx % count) + count) % count;
+      final k = rel.abs() > 1 ? 1.0 : rel.abs();
+      cards.add(_stackCard(
+        _img(photos, photo),
+        dx: rel * _spacing,
+        scale: 1 - k * 0.13, // 뒷 사진을 덜 줄여 더 또렷하게
+        angle: 0, // 기울이지 않고 정렬된 깔끔한 겹침
+        opacity: 1 - k * 0.07,
+      ));
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onHorizontalDragEnd: (d) {
-        final v = d.primaryVelocity ?? 0;
-        if (v < -80) {
-          setState(() => _index = (cur + 1) % count); // 다음
-        } else if (v > 80) {
-          setState(() => _index = (cur - 1 + count) % count); // 이전
-        }
-      },
+      onHorizontalDragStart: (_) => _anim.stop(),
+      onHorizontalDragUpdate: (d) =>
+          setState(() => _page -= d.primaryDelta! / _dragUnit),
+      onHorizontalDragEnd: (d) => _settle(d.primaryVelocity ?? 0),
       child: SizedBox(
         height: 348,
         child: Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
-          children: [
-            // 뒤에 겹쳐 보이는 사진들(작게·바깥으로 살짝 기울여 묶음처럼).
-            if (count > 2)
-              _stackCard(_img(photos, left),
-                  dx: -42, scale: 0.78, angle: -0.08, opacity: 0.9),
-            if (count > 1)
-              _stackCard(_img(photos, right),
-                  dx: 42, scale: 0.78, angle: 0.08, opacity: 0.9),
-            // 메인 사진(맨 앞·크게).
-            _stackCard(_img(photos, cur),
-                dx: 0, scale: 1.0, angle: -0.02, opacity: 1.0),
-          ],
+          children: cards,
         ),
       ),
     );
