@@ -203,11 +203,14 @@ class _PolaroidCarousel extends StatefulWidget {
 }
 
 class _PolaroidCarouselState extends State<_PolaroidCarousel> {
-  // 큰 initialPage에서 시작해 양방향 무한 스크롤(원형 큐).
-  final _controller = PageController(viewportFraction: 0.82, initialPage: 100000);
+  static const _initialPage = 100000;
 
-  // 폴라로이드마다 살짝 다른 기울기(흩어놓은 사진 느낌).
-  static const _angles = [-0.045, 0.028, -0.018, 0.038, -0.03, 0.02];
+  // viewportFraction를 작게 둬 양옆 사진이 반쯤 보이도록(원형 레일 느낌).
+  final _controller =
+      PageController(viewportFraction: 0.68, initialPage: _initialPage);
+
+  // 폴라로이드마다 살짝 다른 기울기.
+  static const _angles = [-0.04, 0.025, -0.016, 0.034, -0.028, 0.018];
 
   @override
   void dispose() {
@@ -221,19 +224,39 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel> {
     final count = photos.isEmpty ? 1 : photos.length;
 
     return SizedBox(
-      height: 346,
+      height: 360,
       child: PageView.builder(
         controller: _controller,
         itemCount: null, // 무한(원형 큐) — 끝에서 처음으로 이어짐
+        clipBehavior: Clip.none,
         itemBuilder: (context, index) {
           final i = index % count; // Dart %는 양수 → 0..count-1
-          return Center(
-            child: _PolaroidCard(
-              image: photos.isEmpty
-                  ? AssetImage(AppAssets.petRest)
-                  : FileImage(photos[i]),
-              angle: _angles[i % _angles.length],
-            ),
+          final card = _PolaroidCard(
+            image: photos.isEmpty
+                ? AssetImage(AppAssets.petRest)
+                : FileImage(photos[i]),
+            angle: _angles[i % _angles.length],
+          );
+          // 가운데 사진은 크게, 양옆은 작게·흐리게 → 코버플로우/원형 레일.
+          return AnimatedBuilder(
+            animation: _controller,
+            child: card,
+            builder: (context, child) {
+              double dist;
+              if (_controller.hasClients && _controller.position.haveDimensions) {
+                dist = (_controller.page ?? _initialPage.toDouble()) - index;
+              } else {
+                dist = (_initialPage - index).toDouble();
+              }
+              final scale = (1 - dist.abs() * 0.24).clamp(0.74, 1.0);
+              final opacity = (1 - dist.abs() * 0.45).clamp(0.45, 1.0);
+              return Center(
+                child: Opacity(
+                  opacity: opacity,
+                  child: Transform.scale(scale: scale, child: child),
+                ),
+              );
+            },
           );
         },
       ),
