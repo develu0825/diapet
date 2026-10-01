@@ -518,6 +518,40 @@ class _ManagePhotosSheetState extends State<_ManagePhotosSheet> {
                 child: ReorderableListView.builder(
                   shrinkWrap: true,
                   buildDefaultDragHandles: false,
+                  // 드래그 중 강조: 각진 회색 그림자 대신 둥근 모서리 +
+                  // 연한 주황 하이라이트 + 부드러운 주황빛 그림자.
+                  proxyDecorator: (child, index, animation) {
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, _) {
+                        final t = Curves.easeInOut.transform(animation.value);
+                        return Material(
+                          color: Colors.transparent,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            decoration: BoxDecoration(
+                              color: Color.lerp(
+                                  Colors.white, AppColors.orangeWash, t),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.orange300
+                                    .withValues(alpha: 0.8 * t),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color.fromRGBO(241, 90, 36, 0.28 * t),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 6),
+                                  spreadRadius: -2,
+                                ),
+                              ],
+                            ),
+                            child: child,
+                          ),
+                        );
+                      },
+                    );
+                  },
                   itemCount: photos.length,
                   onReorder: (o, n) {
                     widget.onReorder(o, n);
