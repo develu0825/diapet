@@ -156,33 +156,11 @@ class _MemorialHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 프로토타입 .mem-hero: 세로 중앙 정렬 — 큰 폴라로이드 위, 이름은 아래 중앙.
     return Column(
       children: [
-        Transform.rotate(
-          angle: -0.0436, // -2.5deg
-          child: Container(
-            // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
-            padding: const EdgeInsets.fromLTRB(13, 13, 13, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6),
-              boxShadow: const [BoxShadow(
-                color: Color.fromRGBO(58, 30, 12, 0.5),
-                offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
-            ),
-            child: Column(
-              children: [
-                // 여러 장을 좌우 스와이프로 넘기는 폴라로이드 사진.
-                _PhotoPager(photos: photos),
-                const SizedBox(height: 12),
-                Text('보리 · 2011–2026', style: AppText.caption.copyWith(
-                    fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 22),
+        // 여러 장의 폴라로이드를 넘겨보는 캐러셀.
+        _PolaroidCarousel(photos: photos),
+        const SizedBox(height: 18),
         Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
         const SizedBox(height: 4),
         Text('함께한 15년 · 언제나 곁에 있을게',
@@ -192,21 +170,22 @@ class _MemorialHero extends StatelessWidget {
   }
 }
 
-/// 폴라로이드 사진 — 여러 장을 좌우 스와이프로 넘기고 하단에 점 인디케이터.
-class _PhotoPager extends StatefulWidget {
-  const _PhotoPager({required this.photos});
+/// 여러 장의 폴라로이드를 좌우로 넘겨보는 캐러셀 — 옆 사진이 살짝 보이고
+/// 각 장이 조금씩 다른 각도로 기울어 사진 더미를 넘기는 느낌.
+class _PolaroidCarousel extends StatefulWidget {
+  const _PolaroidCarousel({required this.photos});
   final List<File> photos;
 
   @override
-  State<_PhotoPager> createState() => _PhotoPagerState();
+  State<_PolaroidCarousel> createState() => _PolaroidCarouselState();
 }
 
-class _PhotoPagerState extends State<_PhotoPager> {
-  final _controller = PageController();
+class _PolaroidCarouselState extends State<_PolaroidCarousel> {
+  final _controller = PageController(viewportFraction: 0.82);
   int _index = 0;
 
-  static const double _w = 198;
-  static const double _h = 232;
+  // 폴라로이드마다 살짝 다른 기울기(흩어놓은 사진 느낌).
+  static const _angles = [-0.045, 0.028, -0.018, 0.038, -0.03, 0.02];
 
   @override
   void dispose() {
@@ -218,31 +197,28 @@ class _PhotoPagerState extends State<_PhotoPager> {
   Widget build(BuildContext context) {
     final photos = widget.photos;
     final count = photos.isEmpty ? 1 : photos.length;
-    // 사진이 줄어 현재 인덱스가 벗어나면 보정.
     final current = _index.clamp(0, count - 1);
 
     return Column(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: SizedBox(
-            width: _w,
-            height: _h,
-            child: PageView.builder(
-              controller: _controller,
-              itemCount: count,
-              onPageChanged: (i) => setState(() => _index = i),
-              itemBuilder: (context, i) {
-                if (photos.isEmpty) {
-                  return Image.asset(AppAssets.petRest, fit: BoxFit.cover);
-                }
-                return Image.file(photos[i], fit: BoxFit.cover);
-              },
+        SizedBox(
+          height: 346,
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: count,
+            onPageChanged: (i) => setState(() => _index = i),
+            itemBuilder: (context, i) => Center(
+              child: _PolaroidCard(
+                image: photos.isEmpty
+                    ? AssetImage(AppAssets.petRest)
+                    : FileImage(photos[i]),
+                angle: _angles[i % _angles.length],
+              ),
             ),
           ),
         ),
         if (count > 1) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -261,6 +237,43 @@ class _PhotoPagerState extends State<_PhotoPager> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// 폴라로이드 한 장 — 흰 프레임 + 사진 + 캡션.
+class _PolaroidCard extends StatelessWidget {
+  const _PolaroidCard({required this.image, required this.angle});
+  final ImageProvider image;
+  final double angle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: angle,
+      child: Container(
+        // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
+        padding: const EdgeInsets.fromLTRB(13, 13, 13, 22),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: const [BoxShadow(
+            color: Color.fromRGBO(58, 30, 12, 0.5),
+            offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Image(image: image, width: 200, height: 236, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: 12),
+            Text('보리 · 2011–2026', style: AppText.caption.copyWith(
+                fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
     );
   }
 }
