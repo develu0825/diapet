@@ -88,7 +88,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
             children: [
               Text('추모 공간', style: AppText.h2),
               const SizedBox(height: AppSpacing.md),
-              _MemorialHero(photos: _photos),
+              _MemorialHero(photos: _photos, onAddPhoto: _addPhotos),
               const SizedBox(height: AppSpacing.md),
               _Candle(
                 lit: _candleLit,
@@ -172,16 +172,17 @@ class _MemorialScreenState extends State<MemorialScreen> {
 }
 
 class _MemorialHero extends StatelessWidget {
-  const _MemorialHero({required this.photos});
+  const _MemorialHero({required this.photos, required this.onAddPhoto});
 
   final List<File> photos;
+  final VoidCallback onAddPhoto;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 여러 장의 폴라로이드를 넘겨보는 캐러셀.
-        _PolaroidCarousel(photos: photos),
+        // 여러 장의 폴라로이드를 겹쳐 넘겨보는 캐러셀.
+        _PolaroidCarousel(photos: photos, onAddPhoto: onAddPhoto),
         const SizedBox(height: 18),
         Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
         const SizedBox(height: 4),
@@ -195,70 +196,80 @@ class _MemorialHero extends StatelessWidget {
 /// 여러 장의 폴라로이드를 좌우로 넘겨보는 캐러셀 — 옆 사진이 살짝 보이고
 /// 각 장이 조금씩 다른 각도로 기울어 사진 더미를 넘기는 느낌.
 class _PolaroidCarousel extends StatefulWidget {
-  const _PolaroidCarousel({required this.photos});
+  const _PolaroidCarousel({required this.photos, required this.onAddPhoto});
   final List<File> photos;
+  final VoidCallback onAddPhoto;
 
   @override
   State<_PolaroidCarousel> createState() => _PolaroidCarouselState();
 }
 
 class _PolaroidCarouselState extends State<_PolaroidCarousel> {
-  static const _initialPage = 100000;
+  int _index = 0; // 맨 앞(메인) 사진의 인덱스. 좌우 스와이프로 순환.
 
-  // viewportFraction를 작게 둬 양옆 사진이 반쯤 보이도록(원형 레일 느낌).
-  final _controller =
-      PageController(viewportFraction: 0.68, initialPage: _initialPage);
+  ImageProvider _img(List<File> photos, int i) =>
+      photos.isEmpty ? AssetImage(AppAssets.petRest) : FileImage(photos[i]);
 
-  // 폴라로이드마다 살짝 다른 기울기.
-  static const _angles = [-0.04, 0.025, -0.016, 0.034, -0.028, 0.018];
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  // 겹쳐 쌓인 폴라로이드 한 장(가로 이동 + 축소 + 기울기).
+  Widget _stackCard(
+    ImageProvider img, {
+    required double dx,
+    required double scale,
+    required double angle,
+    required double opacity,
+  }) {
+    return Opacity(
+      opacity: opacity,
+      child: Transform.translate(
+        offset: Offset(dx, 0),
+        child: Transform.scale(
+          scale: scale,
+          child: _PolaroidCard(image: img, angle: angle),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final photos = widget.photos;
-    final count = photos.isEmpty ? 1 : photos.length;
+    // 아직 사진이 없을 때: 추가를 권하는 빈 상태(동행형 톤).
+    if (photos.isEmpty) {
+      return _EmptyPolaroid(onTap: widget.onAddPhoto);
+    }
+    final count = photos.length;
+    final cur = _index % count;
+    final left = (cur - 1 + count) % count;
+    final right = (cur + 1) % count;
 
-    return SizedBox(
-      height: 360,
-      child: PageView.builder(
-        controller: _controller,
-        itemCount: null, // 무한(원형 큐) — 끝에서 처음으로 이어짐
-        clipBehavior: Clip.none,
-        itemBuilder: (context, index) {
-          final i = index % count; // Dart %는 양수 → 0..count-1
-          final card = _PolaroidCard(
-            image: photos.isEmpty
-                ? AssetImage(AppAssets.petRest)
-                : FileImage(photos[i]),
-            angle: _angles[i % _angles.length],
-          );
-          // 가운데 사진은 크게, 양옆은 작게·흐리게 → 코버플로우/원형 레일.
-          return AnimatedBuilder(
-            animation: _controller,
-            child: card,
-            builder: (context, child) {
-              double dist;
-              if (_controller.hasClients && _controller.position.haveDimensions) {
-                dist = (_controller.page ?? _initialPage.toDouble()) - index;
-              } else {
-                dist = (_initialPage - index).toDouble();
-              }
-              final scale = (1 - dist.abs() * 0.24).clamp(0.74, 1.0);
-              final opacity = (1 - dist.abs() * 0.45).clamp(0.45, 1.0);
-              return Center(
-                child: Opacity(
-                  opacity: opacity,
-                  child: Transform.scale(scale: scale, child: child),
-                ),
-              );
-            },
-          );
-        },
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragEnd: (d) {
+        final v = d.primaryVelocity ?? 0;
+        if (v < -80) {
+          setState(() => _index = (cur + 1) % count); // 다음
+        } else if (v > 80) {
+          setState(() => _index = (cur - 1 + count) % count); // 이전
+        }
+      },
+      child: SizedBox(
+        height: 348,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            // 뒤에 겹쳐 보이는 사진들(작게·바깥으로 살짝 기울여 묶음처럼).
+            if (count > 2)
+              _stackCard(_img(photos, left),
+                  dx: -42, scale: 0.78, angle: -0.08, opacity: 0.9),
+            if (count > 1)
+              _stackCard(_img(photos, right),
+                  dx: 42, scale: 0.78, angle: 0.08, opacity: 0.9),
+            // 메인 사진(맨 앞·크게).
+            _stackCard(_img(photos, cur),
+                dx: 0, scale: 1.0, angle: -0.02, opacity: 1.0),
+          ],
+        ),
       ),
     );
   }
@@ -292,6 +303,62 @@ class _PolaroidCard extends StatelessWidget {
             Text('보리 · 2011–2026', style: AppText.caption.copyWith(
                 fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 사진이 없을 때의 빈 폴라로이드 — 탭하면 사진 추가.
+class _EmptyPolaroid extends StatelessWidget {
+  const _EmptyPolaroid({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 348,
+      child: Center(
+        child: GestureDetector(
+          onTap: onTap,
+          child: Transform.rotate(
+            angle: -0.02,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(13, 13, 13, 22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 200,
+                    height: 236,
+                    decoration: BoxDecoration(
+                      color: AppColors.paper,
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: AppColors.line2),
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_a_photo_outlined, size: 34, color: AppColors.faint),
+                          SizedBox(height: 10),
+                          Text('사진을 더해보세요', style: TextStyle(
+                              fontSize: 13, color: AppColors.faint, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('소중한 순간을 모아두는 공간', style: AppText.caption.copyWith(
+                      fontSize: 13, color: AppColors.soft, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
