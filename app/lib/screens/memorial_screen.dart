@@ -208,7 +208,7 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel>
     with SingleTickerProviderStateMixin {
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 340),
+    duration: const Duration(milliseconds: 420),
   );
 
   double _page = 0; // 연속 위치(소수 = 넘기는 중). 정수에 안착.
@@ -278,10 +278,10 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel>
 
     // 현재 위치 주변 카드를 연속 위치로 배치 → 드래그를 따라 부드럽게.
     final entries = <(int, double)>[]; // (정수 인덱스, 가운데 기준 상대 위치)
-    for (var o = -2; o <= 2; o++) {
+    for (var o = -3; o <= 3; o++) {
       final idx = base + o;
       final rel = idx - _page;
-      if (rel.abs() > 1.6) continue;
+      if (rel.abs() >= 2.0) continue; // 2칸 밖은 안 그림(거기선 이미 투명)
       entries.add((idx, rel));
     }
     // 멀리 있는 것부터 그려서 가까운(가운데) 카드가 맨 위에 오게.
@@ -289,13 +289,19 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel>
     final cards = <Widget>[];
     for (final (idx, rel) in entries) {
       final photo = ((idx % count) + count) % count;
-      final k = rel.abs() > 1 ? 1.0 : rel.abs();
+      final d = rel.abs();
+      // 0~1칸: 뒤로 살짝 물러나며 또렷(뒷 사진 잘 보임)
+      // 1~2칸: 점점 더 작아지고 투명해져 '스르륵' 사라짐(팝 없음)
+      final near = d > 1 ? 1.0 : d;
+      final far = d > 1 ? d - 1 : 0.0;
+      final scale = 1 - 0.13 * near - 0.17 * far;
+      final opacity = d <= 1 ? 1 - 0.06 * d : 0.94 * (2 - d);
       cards.add(_stackCard(
         _img(photos, photo),
         dx: rel * _spacing,
-        scale: 1 - k * 0.13, // 뒷 사진을 덜 줄여 더 또렷하게
+        scale: scale,
         angle: 0, // 기울이지 않고 정렬된 깔끔한 겹침
-        opacity: 1 - k * 0.07,
+        opacity: opacity,
       ));
     }
 
