@@ -68,6 +68,39 @@ class _MemorialScreenState extends State<MemorialScreen> {
     }
   }
 
+  // 길게 눌러 여는 사진 관리(삭제·순서 변경) 시트.
+  void _openManageSheet() {
+    if (_photos.isEmpty) return;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (_) => _ManagePhotosSheet(
+        photos: _photos,
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            var ni = newIndex;
+            if (ni > oldIndex) ni -= 1;
+            _photos.insert(ni, _photos.removeAt(oldIndex));
+          });
+          _store.save(_photos);
+        },
+        onDelete: (index) {
+          setState(() {
+            final removed = _photos.removeAt(index);
+            try {
+              removed.deleteSync(); // 실제 파일도 삭제
+            } catch (_) {}
+          });
+          _store.save(_photos);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -88,7 +121,11 @@ class _MemorialScreenState extends State<MemorialScreen> {
             children: [
               Text('추모 공간', style: AppText.h2),
               const SizedBox(height: AppSpacing.md),
-              _MemorialHero(photos: _photos, onAddPhoto: _addPhotos),
+              _MemorialHero(
+                photos: _photos,
+                onAddPhoto: _addPhotos,
+                onManage: _openManageSheet,
+              ),
               const SizedBox(height: AppSpacing.md),
               _Candle(
                 lit: _candleLit,
@@ -172,17 +209,26 @@ class _MemorialScreenState extends State<MemorialScreen> {
 }
 
 class _MemorialHero extends StatelessWidget {
-  const _MemorialHero({required this.photos, required this.onAddPhoto});
+  const _MemorialHero({
+    required this.photos,
+    required this.onAddPhoto,
+    required this.onManage,
+  });
 
   final List<File> photos;
   final VoidCallback onAddPhoto;
+  final VoidCallback onManage;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         // 여러 장의 폴라로이드를 겹쳐 넘겨보는 캐러셀.
-        _PolaroidCarousel(photos: photos, onAddPhoto: onAddPhoto),
+        _PolaroidCarousel(
+          photos: photos,
+          onAddPhoto: onAddPhoto,
+          onManage: onManage,
+        ),
         const SizedBox(height: 18),
         Text('보리를 기억하는 공간', style: AppText.h1.copyWith(fontSize: 24)),
         const SizedBox(height: 4),
@@ -196,9 +242,14 @@ class _MemorialHero extends StatelessWidget {
 /// 여러 장의 폴라로이드를 좌우로 넘겨보는 캐러셀 — 옆 사진이 살짝 보이고
 /// 각 장이 조금씩 다른 각도로 기울어 사진 더미를 넘기는 느낌.
 class _PolaroidCarousel extends StatefulWidget {
-  const _PolaroidCarousel({required this.photos, required this.onAddPhoto});
+  const _PolaroidCarousel({
+    required this.photos,
+    required this.onAddPhoto,
+    required this.onManage,
+  });
   final List<File> photos;
   final VoidCallback onAddPhoto;
+  final VoidCallback onManage;
 
   @override
   State<_PolaroidCarousel> createState() => _PolaroidCarouselState();
@@ -307,6 +358,7 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel>
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
+      onLongPress: widget.onManage, // 길게 눌러 사진 관리(삭제·순서)
       onHorizontalDragStart: (_) => _anim.stop(),
       onHorizontalDragUpdate: (d) =>
           setState(() => _page -= d.primaryDelta! / _dragUnit),
@@ -407,6 +459,118 @@ class _EmptyPolaroid extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 사진 관리 시트 — 삭제 + 드래그 핸들로 순서 변경(변경 즉시 저장).
+class _ManagePhotosSheet extends StatefulWidget {
+  const _ManagePhotosSheet({
+    required this.photos,
+    required this.onReorder,
+    required this.onDelete,
+  });
+
+  final List<File> photos;
+  final void Function(int oldIndex, int newIndex) onReorder;
+  final void Function(int index) onDelete;
+
+  @override
+  State<_ManagePhotosSheet> createState() => _ManagePhotosSheetState();
+}
+
+class _ManagePhotosSheetState extends State<_ManagePhotosSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final photos = widget.photos;
+    final maxH = MediaQuery.of(context).size.height * 0.55;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('사진 관리', style: AppText.h3),
+                const Spacer(),
+                Text('끌어서 순서 변경',
+                    style: AppText.caption.copyWith(color: AppColors.faint)),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (photos.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Center(
+                  child: Text('사진이 없어요',
+                      style: AppText.body.copyWith(color: AppColors.faint)),
+                ),
+              )
+            else
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxH),
+                child: ReorderableListView.builder(
+                  shrinkWrap: true,
+                  buildDefaultDragHandles: false,
+                  itemCount: photos.length,
+                  onReorder: (o, n) {
+                    widget.onReorder(o, n);
+                    setState(() {});
+                  },
+                  itemBuilder: (context, i) {
+                    final f = photos[i];
+                    return Padding(
+                      key: ValueKey(f.path),
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(f,
+                                width: 46, height: 46, fit: BoxFit.cover),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text('사진 ${i + 1}',
+                                style: AppText.bodyStrong.copyWith(fontSize: 14)),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: AppColors.danger),
+                            onPressed: () {
+                              widget.onDelete(i);
+                              setState(() {});
+                            },
+                          ),
+                          ReorderableDragStartListener(
+                            index: i,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Icon(Icons.drag_handle, color: AppColors.faint),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                label: '완료',
+                variant: AppButtonVariant.ghost,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
         ),
       ),
     );
