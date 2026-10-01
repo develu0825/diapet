@@ -193,8 +193,8 @@ class _MemorialHero extends StatelessWidget {
             ),
             // 폴라로이드 오른쪽 아래 모서리의 사진 추가(카메라) 버튼.
             Positioned(
-              right: -6,
-              bottom: 26,
+              right: 2,
+              bottom: 8,
               child: _CameraButton(onTap: onPickPhoto),
             ),
           ],
@@ -219,17 +219,17 @@ class _CameraButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
-          color: AppColors.orange500,
+          color: AppColors.soft, // 회색(웜 그레이)
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
+          border: Border.all(color: Colors.white, width: 2),
           boxShadow: const [BoxShadow(
-            color: Color.fromRGBO(58, 30, 12, 0.3),
-            offset: Offset(0, 4), blurRadius: 10, spreadRadius: -2)],
+            color: Color.fromRGBO(58, 30, 12, 0.25),
+            offset: Offset(0, 3), blurRadius: 8, spreadRadius: -2)],
         ),
-        child: const Icon(Icons.photo_camera, size: 19, color: Colors.white),
+        child: const Icon(Icons.photo_camera, size: 14, color: Colors.white),
       ),
     );
   }
