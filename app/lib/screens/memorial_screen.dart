@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../app_assets.dart';
+import '../services/memorial_photo_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -35,14 +36,35 @@ class _MemorialScreenState extends State<MemorialScreen> {
   bool _shared = false;
 
   final _picker = ImagePicker();
+  final _store = MemorialPhotoStore();
   final List<File> _photos = []; // 갤러리에서 고른 추모 사진들(스와이프로 넘김)
 
   int get _candleCount => _candleLit ? 1204 : 1203;
 
+  @override
+  void initState() {
+    super.initState();
+    _restorePhotos();
+  }
+
+  Future<void> _restorePhotos() async {
+    final saved = await _store.load();
+    if (saved.isNotEmpty && mounted) {
+      setState(() => _photos
+        ..clear()
+        ..addAll(saved));
+    }
+  }
+
   Future<void> _addPhotos() async {
     final picked = await _picker.pickMultiImage(imageQuality: 85);
-    if (picked.isNotEmpty && mounted) {
-      setState(() => _photos.addAll(picked.map((x) => File(x.path))));
+    if (picked.isEmpty) return;
+    // 전용 폴더로 복사 후 경로를 저장(영속).
+    final updated = await _store.addPicked(picked, _photos);
+    if (mounted) {
+      setState(() => _photos
+        ..clear()
+        ..addAll(updated));
     }
   }
 
@@ -181,8 +203,8 @@ class _PolaroidCarousel extends StatefulWidget {
 }
 
 class _PolaroidCarouselState extends State<_PolaroidCarousel> {
-  final _controller = PageController(viewportFraction: 0.82);
-  int _index = 0;
+  // 큰 initialPage에서 시작해 양방향 무한 스크롤(원형 큐).
+  final _controller = PageController(viewportFraction: 0.82, initialPage: 100000);
 
   // 폴라로이드마다 살짝 다른 기울기(흩어놓은 사진 느낌).
   static const _angles = [-0.045, 0.028, -0.018, 0.038, -0.03, 0.02];
@@ -197,46 +219,24 @@ class _PolaroidCarouselState extends State<_PolaroidCarousel> {
   Widget build(BuildContext context) {
     final photos = widget.photos;
     final count = photos.isEmpty ? 1 : photos.length;
-    final current = _index.clamp(0, count - 1);
 
-    return Column(
-      children: [
-        SizedBox(
-          height: 346,
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: count,
-            onPageChanged: (i) => setState(() => _index = i),
-            itemBuilder: (context, i) => Center(
-              child: _PolaroidCard(
-                image: photos.isEmpty
-                    ? AssetImage(AppAssets.petRest)
-                    : FileImage(photos[i]),
-                angle: _angles[i % _angles.length],
-              ),
+    return SizedBox(
+      height: 346,
+      child: PageView.builder(
+        controller: _controller,
+        itemCount: null, // 무한(원형 큐) — 끝에서 처음으로 이어짐
+        itemBuilder: (context, index) {
+          final i = index % count; // Dart %는 양수 → 0..count-1
+          return Center(
+            child: _PolaroidCard(
+              image: photos.isEmpty
+                  ? AssetImage(AppAssets.petRest)
+                  : FileImage(photos[i]),
+              angle: _angles[i % _angles.length],
             ),
-          ),
-        ),
-        if (count > 1) ...[
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 0; i < count; i++)
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: i == current ? 16 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: i == current ? AppColors.orange500 : AppColors.line2,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ],
+          );
+        },
+      ),
     );
   }
 }
@@ -252,14 +252,11 @@ class _PolaroidCard extends StatelessWidget {
     return Transform.rotate(
       angle: angle,
       child: Container(
-        // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백.
+        // 폴라로이드: 사방 얇은 테두리 + 두꺼운 하단 여백. (그림자 없음)
         padding: const EdgeInsets.fromLTRB(13, 13, 13, 22),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
-          boxShadow: const [BoxShadow(
-            color: Color.fromRGBO(58, 30, 12, 0.5),
-            offset: Offset(0, 16), blurRadius: 34, spreadRadius: -16)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

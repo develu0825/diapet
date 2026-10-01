@@ -109,9 +109,14 @@ void main() {
     await tester.tap(find.text('추모'));
     await tester.pumpAndSettle();
     expect(find.text('보리를 기억하는 공간'), findsOneWidget);
+
+    // 촛불 카드가 커진 폴라로이드 캐러셀에 밀려 뷰포트 밖일 수 있어 스크롤로 노출.
+    final candle = find.textContaining('촛불 켜기');
+    await tester.scrollUntilVisible(candle, 200,
+        scrollable: find.byType(Scrollable).first);
     expect(find.textContaining('1,203명이 함께'), findsOneWidget);
 
-    await tester.tap(find.textContaining('촛불 켜기'));
+    await tester.tap(candle);
     await tester.pump();
     expect(find.textContaining('촛불을 켰어요 · 1,204명'), findsOneWidget);
   });
