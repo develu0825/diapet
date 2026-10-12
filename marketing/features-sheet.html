@@ -1,0 +1,116 @@
+<title>Diapet — 기능 소개</title>
+<style>
+  :root{
+    --paper:#FDFAF6; --card:#FFFFFF; --ink:#241A14; --soft:#6B5D53; --faint:#9C8E83;
+    --line:#EFE4DB; --line2:#E0D2C6; --orange:#F15A24; --orange600:#D84816;
+    --wash:#FFF0E8; --sunset:#FF6A2C; --ok:#2E9E6B; --ok-wash:#E4F4EC; --gold:#C08A2E; --gold-wash:#F8EFD9;
+    --grad:linear-gradient(158deg,#FF7A3D 0%,#F15A24 100%);
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    --mono:"SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E8DFD4;font-family:var(--sans);color:var(--ink);line-height:1.6;
+    -webkit-font-smoothing:antialiased;padding:26px 14px}
+  .sheet{max-width:760px;margin:0 auto;background:var(--paper);border-radius:14px;overflow:hidden;
+    box-shadow:0 2px 6px rgba(58,30,12,.1),0 40px 90px -40px rgba(58,30,12,.55)}
+  svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  .head{padding:46px 56px 30px;text-align:center;border-bottom:1px solid var(--line)}
+  .head .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+  .head h1{font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.3;margin:12px 0 10px;text-wrap:balance}
+  .head p{font-size:14.5px;color:var(--soft);max-width:48ch;margin:0 auto;line-height:1.7}
+
+  .steps{padding:34px 56px 8px;display:flex;flex-direction:column;gap:14px}
+  .step{display:grid;grid-template-columns:44px 1fr;gap:16px}
+  .rail{display:flex;flex-direction:column;align-items:center}
+  .num{width:42px;height:42px;flex:none;border-radius:50%;background:var(--wash);color:var(--orange600);
+    font-family:var(--mono);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .step:not(:last-child) .rail::after{content:"";flex:1;width:2px;margin-top:6px;background:var(--line2);border-radius:2px}
+  .card{background:var(--card);border-radius:18px;padding:17px 18px;
+    box-shadow:0 1px 2px rgba(58,30,12,.05),0 14px 30px -24px rgba(58,30,12,.5)}
+  .card .t{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+  .card .ic{width:30px;height:30px;flex:none;border-radius:9px;background:var(--wash);color:var(--orange);display:flex;align-items:center;justify-content:center}
+  .card .ic svg{width:18px;height:18px}
+  .card h3{font-size:16.5px;font-weight:750;letter-spacing:-.01em}
+  .card p{font-size:13px;color:var(--soft);line-height:1.6}
+  .card p b{color:var(--ink);font-weight:700}
+  .memrow{display:flex;gap:16px;align-items:center}
+  .memrow .b{flex:1}
+  .polaroid{flex:none;background:#fff;padding:7px 7px 12px;border-radius:5px;transform:rotate(-3deg);box-shadow:0 12px 24px -12px rgba(58,30,12,.5)}
+  .polaroid .pic{width:66px;height:76px;border-radius:2px;background:linear-gradient(160deg,#FBE7DB,#F3D7C6);display:flex;align-items:center;justify-content:center;color:var(--orange)}
+  .polaroid .pic svg{width:24px;height:24px}
+  .polaroid .cap{font-size:9px;color:var(--soft);font-weight:600;text-align:center;margin-top:6px}
+
+  .trust{margin:24px 56px 0;padding:20px;background:var(--wash);border-radius:16px}
+  .trust .l{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange600);text-align:center;margin-bottom:12px}
+  .badges{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;box-shadow:0 1px 2px rgba(58,30,12,.06)}
+  .badge svg{width:14px;height:14px}
+  .badge.ok{color:var(--ok)} .badge.gold{color:var(--gold)} .badge.or{color:var(--orange600)}
+
+  .foot{text-align:center;padding:26px 56px 40px}
+  .foot .q{font-size:17px;font-weight:800;color:var(--ink);line-height:1.5}
+  .foot .q .em{color:var(--orange600)}
+  .wm{display:inline-flex;align-items:center;gap:9px;margin-top:16px}
+  .wm .dot{width:24px;height:24px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center}
+  .wm .dot svg{width:14px;height:14px}
+  .wm .name{font-size:17px;font-weight:800;color:var(--orange);letter-spacing:-.02em}
+  @media(max-width:560px){.head,.steps{padding-left:24px;padding-right:24px}.trust,.foot{margin-left:0;margin-right:0;padding-left:24px;padding-right:24px}.head h1{font-size:24px}.memrow{flex-direction:column;align-items:flex-start}}
+</style>
+
+<div class="sheet">
+  <div class="head">
+    <div class="eyebrow">How it helps</div>
+    <h1>떠나보내는 길,<br>이렇게 함께합니다</h1>
+    <p>긴급 안내부터 장례, 추모, 사후 케어까지 — 한 곳에서 차근차근.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="rail"><div class="num">1</div></div>
+      <div class="card">
+        <div class="t"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span><h3>긴급 안내 — "아이를 보내주려 해요"</h3></div>
+        <p>편안하게 눕히기부터 서늘한 곳 안치, 마지막 인사 준비까지 <b>단계별로</b> 안내해요. 새벽·야간에도 당일 예약을 잡아드립니다.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="rail"><div class="num">2</div></div>
+      <div class="card">
+        <div class="t"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 21h16M6 21V9l6-4 6 4v12M10 21v-5h4v5"/></svg></span><h3>합법 장례식장 비교 · 예약</h3></div>
+        <p><b>정부 등록 허가번호를 실시간 대조</b>한 업체만. 부가세 포함 <b>확정가</b>로 비교하고 강매 없이 바로 예약하세요.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="rail"><div class="num">3</div></div>
+      <div class="card memrow">
+        <div class="b">
+          <div class="t"><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></span><h3>디지털 추모 공간</h3></div>
+          <p>함께한 사진을 <b>폴라로이드</b>로 넘겨보고, 촛불과 <b>기일 알림</b>으로 오래 기억해요. 유골함·추모석의 <b>QR</b>로 가족 누구나 함께.</p>
+        </div>
+        <div class="polaroid"><div class="pic"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div><div class="cap">보리 · 2011–2026</div></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="rail"><div class="num">4</div></div>
+      <div class="card">
+        <div class="t"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><h3>사후 케어 · 사전 준비</h3></div>
+        <p>동물등록 <b>말소 신고 안내</b>와 <b>펫로스 심리 상담</b>까지. 노령·투병 중이라면 남은 시간에 집중하도록 <b>미리</b> 준비할 수도 있어요.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="trust">
+    <div class="l">믿을 수 있는 이유</div>
+    <div class="badges">
+      <span class="badge ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>정부 등록 검증</span>
+      <span class="badge or"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>부가세 포함 확정가</span>
+      <span class="badge gold"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.3 4.7 5.2.8-3.8 3.7.9 5.1L12 15.9 7.4 17.9l.9-5.1L4.5 8.5l5.2-.8z"/></svg>강매 없음</span>
+      <span class="badge or"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>전 과정 참관</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="q">천천히 오세요. <span class="em">저희가 준비해 두겠습니다.</span></div>
+    <div class="wm"><span class="dot"><svg viewBox="0 0 64 64" fill="none"><path d="M16 48V22c0-4 5-6 8-3l16 20c3 3 8 1 8-3V16" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="name">Diapet</span></div>
+  </div>
+</div>

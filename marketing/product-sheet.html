@@ -1,0 +1,122 @@
+<title>Diapet — 제품 소개</title>
+<style>
+  :root{
+    --paper:#FDFAF6; --card:#FFFFFF; --ink:#241A14; --soft:#6B5D53; --faint:#9C8E83;
+    --line:#EFE4DB; --line2:#E0D2C6; --orange:#F15A24; --orange600:#D84816; --orange400:#FF7A3D;
+    --wash:#FFF0E8; --sunset:#FF6A2C; --ok:#2E9E6B;
+    --grad:linear-gradient(158deg,#FF7A3D 0%,#F15A24 100%);
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    --mono:"SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E8DFD4;font-family:var(--sans);color:var(--ink);line-height:1.6;
+    -webkit-font-smoothing:antialiased;padding:26px 14px}
+  .sheet{max-width:760px;margin:0 auto;background:var(--paper);border-radius:14px;overflow:hidden;
+    box-shadow:0 2px 6px rgba(58,30,12,.1),0 40px 90px -40px rgba(58,30,12,.55)}
+  svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+  /* top band */
+  .top{position:relative;background:var(--sunset);color:#fff;overflow:hidden;padding:40px 48px 0}
+  .top .meta{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.95}
+  .top .meta .r{opacity:.85;font-family:var(--mono)}
+  .top .pretitle{margin-top:46px;font-size:17px;font-weight:700;text-align:center;opacity:.96}
+  .bigword{text-align:center;font-weight:800;letter-spacing:-.04em;line-height:.92;
+    font-size:150px;margin:2px 0 -6px;text-shadow:0 10px 36px rgba(140,40,0,.3)}
+  .bigword small{font-size:120px}
+  .halo{position:absolute;width:440px;height:440px;border-radius:50%;top:-220px;left:-120px;
+    background:radial-gradient(closest-side,rgba(255,255,255,.16),transparent)}
+
+  /* phone */
+  .stage{display:flex;justify-content:center;gap:0;padding:0 0 2px;background:var(--sunset)}
+  .phone{width:260px;flex:none;background:#141414;border-radius:34px;padding:9px;margin-bottom:-60px;
+    box-shadow:0 36px 60px -24px rgba(40,16,2,.55);transform:rotate(-3deg)}
+  .phone .screen{background:var(--paper);border-radius:26px;overflow:hidden;height:470px;position:relative}
+  .pstat{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 2px;font-size:10px;font-weight:600}
+  .pstat .dots{font-family:var(--mono);letter-spacing:1px}
+  .pbody{padding:6px 15px}
+  .plogo{font-size:15px;font-weight:800;color:var(--orange);letter-spacing:-.02em}
+  .pgreet{font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-top:12px}
+  .pgreet-sub{font-size:11px;color:var(--soft);margin-top:6px;line-height:1.5}
+  .ember{margin-top:14px;background:var(--grad);border-radius:15px;padding:14px;color:#fff;
+    display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px -12px rgba(241,90,36,.7)}
+  .ember .tx b{font-size:13.5px;font-weight:800;display:block}
+  .ember .tx span{font-size:10px;opacity:.95;display:block;margin-top:3px;line-height:1.4}
+  .ember .pic{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.25);flex:none}
+  .ptiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .ptile{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+  .ptile .d{width:20px;height:20px;flex:none}
+  .c1{color:var(--orange)} .c2{color:#4E9E6A} .c3{color:#8578CE} .c4{color:#5B93C9}
+
+  .bubble{align-self:center;background:#fff;color:var(--ink);border-radius:14px;padding:11px 13px;
+    box-shadow:0 14px 30px -16px rgba(58,30,12,.4);max-width:190px;margin-left:-26px;margin-bottom:40px;
+    transform:rotate(2deg);position:relative;z-index:3}
+  .bubble .tag{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--orange600);text-transform:uppercase}
+  .bubble p{font-size:12px;color:var(--soft);margin-top:4px;line-height:1.5}
+
+  /* discovery */
+  .disc{background:var(--paper);padding:84px 56px 46px;text-align:center}
+  .disc .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+  .disc h2{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.4;margin:12px 0 18px;text-wrap:balance}
+  .disc p{font-size:14px;color:var(--soft);line-height:1.8;max-width:58ch;margin:0 auto}
+  .disc p b{color:var(--ink);font-weight:700}
+  .disc .hl{color:var(--orange600);font-weight:800}
+
+  .foot{display:flex;align-items:center;justify-content:center;gap:9px;padding:0 0 40px;background:var(--paper)}
+  .foot .dot{width:24px;height:24px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center}
+  .foot .dot svg{width:14px;height:14px}
+  .foot .name{font-size:17px;font-weight:800;color:var(--orange);letter-spacing:-.02em}
+  @media(max-width:560px){
+    .top{padding:30px 24px 0} .bigword{font-size:98px} .bigword small{font-size:78px}
+    .disc{padding:74px 26px 38px} .disc h2{font-size:21px} .bubble{display:none}
+  }
+</style>
+
+<div class="sheet">
+  <div class="top">
+    <div class="halo"></div>
+    <div class="meta"><span>Diapet · 반려동물 장례·추모</span><span class="r">Product · 2026</span></div>
+    <div class="pretitle">가장 힘든 순간, 혼자가 아니도록</div>
+    <div class="bigword">끝까지<small>.</small></div>
+    <div class="stage">
+      <div class="phone">
+        <div class="screen">
+          <div class="pstat"><span>9:41</span><span class="dots">●●● ◔ ▰</span></div>
+          <div class="pbody">
+            <div class="plogo">Diapet</div>
+            <div class="pgreet">지금,<br>많이 힘드신가요?</div>
+            <div class="pgreet-sub">혼자가 아니에요.<br>Diapet이 차근차근 도와드릴게요.</div>
+            <div class="ember">
+              <div class="tx"><b>아이를 보내주려 해요</b><span>지금 무엇을 해야 하는지 안내해드릴게요</span></div>
+              <div class="pic"></div>
+            </div>
+            <div class="ptiles">
+              <div class="ptile"><svg class="i d c1" viewBox="0 0 24 24"><path d="M4 21h16M6 21V9l6-4 6 4v12"/></svg>장례 예약</div>
+              <div class="ptile"><svg class="i d c2" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 13l2 2 4-4"/></svg>사전 준비</div>
+              <div class="ptile"><svg class="i d c3" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모 공간</div>
+              <div class="ptile"><svg class="i d c4" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg>펫로스 상담</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bubble">
+        <div class="tag">확정가</div>
+        <p>부가세 포함 금액 그대로. <b>현장 추가금·강매 없이</b> 예약해요.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="disc">
+    <div class="eyebrow">Discovery</div>
+    <h2>소중한 아이를 보내는 길이,<br>왜 이렇게 막막할까요?</h2>
+    <p>갑작스러운 이별 앞에서 무엇부터 해야 할지 알기 어렵고, 장례 비용은 불투명하며,
+      <b>정식 허가 없이 운영되는 업체</b>도 적지 않습니다. 슬픔에 잠긴 순간, 알아보고 비교할 여력은 더더욱 없죠.
+      <span class="hl">Diapet</span>은 '떠나보내는 일이 이렇게 혼란스러워도 될까'라는 물음에서 시작했습니다.
+      긴급 안내부터 <b>정부 등록을 검증한 장례식장</b>의 확정가 비교·예약, 그리고 오래 기억할 추모 공간까지
+      — 가장 힘든 순간을 <b>처음부터 끝까지</b> 함께합니다.</p>
+  </section>
+
+  <div class="foot">
+    <span class="dot"><svg viewBox="0 0 64 64" fill="none"><path d="M16 48V22c0-4 5-6 8-3l16 20c3 3 8 1 8-3V16" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="name">Diapet</span>
+  </div>
+</div>
