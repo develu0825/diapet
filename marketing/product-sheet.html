@@ -3,104 +3,162 @@
   :root{
     --paper:#FDFAF6; --card:#FFFFFF; --ink:#241A14; --soft:#6B5D53; --faint:#9C8E83;
     --line:#EFE4DB; --line2:#E0D2C6; --orange:#F15A24; --orange600:#D84816; --orange400:#FF7A3D;
-    --wash:#FFF0E8; --sunset:#FF6A2C; --ok:#2E9E6B;
+    --wash:#FFF0E8; --sunset:#F15A24; --ok:#2E9E6B;
     --grad:linear-gradient(158deg,#FF7A3D 0%,#F15A24 100%);
     --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
     --mono:"SF Mono",Consolas,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#E8DFD4;font-family:var(--sans);color:var(--ink);line-height:1.6;
-    -webkit-font-smoothing:antialiased;padding:26px 14px}
-  .sheet{max-width:760px;margin:0 auto;background:var(--paper);border-radius:14px;overflow:hidden;
+    -webkit-font-smoothing:antialiased;padding:24px 14px}
+  .sheet{max-width:760px;margin:0 auto;background:var(--card);border-radius:12px;overflow:hidden;
     box-shadow:0 2px 6px rgba(58,30,12,.1),0 40px 90px -40px rgba(58,30,12,.55)}
   svg.i{stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-  /* top band */
-  .top{position:relative;background:var(--sunset);color:#fff;overflow:hidden;padding:40px 48px 0}
-  .top .meta{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.95}
-  .top .meta .r{opacity:.85;font-family:var(--mono)}
-  .top .pretitle{margin-top:46px;font-size:17px;font-weight:700;text-align:center;opacity:.96}
-  .bigword{text-align:center;font-weight:800;letter-spacing:-.04em;line-height:.92;
-    font-size:150px;margin:2px 0 -6px;text-shadow:0 10px 36px rgba(140,40,0,.3)}
-  .bigword small{font-size:120px}
-  .halo{position:absolute;width:440px;height:440px;border-radius:50%;top:-220px;left:-120px;
-    background:radial-gradient(closest-side,rgba(255,255,255,.16),transparent)}
+  /* ORANGE upper */
+  .top{position:relative;background:var(--sunset);color:#fff;overflow:hidden;padding:30px 40px 0}
+  .top::after{content:"";position:absolute;right:-60px;top:300px;width:340px;height:340px;border-radius:70px;
+    background:rgba(255,255,255,.07);transform:rotate(32deg)}
+  .meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;position:relative;z-index:2}
+  .meta .l b{font-size:13px;font-weight:800;letter-spacing:.02em}
+  .meta .l span{display:block;opacity:.9;margin-top:3px}
+  .meta .m{opacity:.95}
+  .meta .m b{font-weight:800}
+  .meta .r{text-align:right;opacity:.92;font-family:var(--mono);letter-spacing:.02em}
+  .meta .r .tag{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-family:var(--sans);font-weight:700}
+  .meta .r .tag .d{width:16px;height:16px;border-radius:5px;background:#fff;display:inline-flex;align-items:center;justify-content:center}
+  .meta .r .tag .d svg{width:10px;height:10px}
 
-  /* phone */
-  .stage{display:flex;justify-content:center;gap:0;padding:0 0 2px;background:var(--sunset)}
-  .phone{width:260px;flex:none;background:#141414;border-radius:34px;padding:9px;margin-bottom:-60px;
-    box-shadow:0 36px 60px -24px rgba(40,16,2,.55);transform:rotate(-3deg)}
-  .phone .screen{background:var(--paper);border-radius:26px;overflow:hidden;height:470px;position:relative}
-  .pstat{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 2px;font-size:10px;font-weight:600}
+  .pretitle{text-align:center;font-size:19px;font-weight:700;margin-top:30px;position:relative;z-index:2;opacity:.98}
+  .bigword{text-align:center;font-weight:800;letter-spacing:-.05em;line-height:.9;font-size:158px;
+    margin:0 0 -4px;position:relative;z-index:1;text-shadow:0 12px 40px rgba(150,45,0,.28)}
+
+  .stage{position:relative;height:560px;margin-top:-66px}
+  .phone{position:absolute;width:218px;background:#141414;border-radius:30px;padding:7px;
+    box-shadow:0 40px 60px -22px rgba(30,12,2,.5)}
+  .phone .screen{background:var(--paper);border-radius:24px;overflow:hidden;height:420px;position:relative}
+  .pa{left:150px;top:92px;transform:rotate(-4deg);z-index:2}
+  .pb{left:338px;top:40px;transform:rotate(6deg);z-index:1}
+  .pstat{display:flex;justify-content:space-between;padding:9px 14px 2px;font-size:9px;font-weight:600}
   .pstat .dots{font-family:var(--mono);letter-spacing:1px}
-  .pbody{padding:6px 15px}
-  .plogo{font-size:15px;font-weight:800;color:var(--orange);letter-spacing:-.02em}
-  .pgreet{font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-top:12px}
-  .pgreet-sub{font-size:11px;color:var(--soft);margin-top:6px;line-height:1.5}
-  .ember{margin-top:14px;background:var(--grad);border-radius:15px;padding:14px;color:#fff;
-    display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px -12px rgba(241,90,36,.7)}
-  .ember .tx b{font-size:13.5px;font-weight:800;display:block}
-  .ember .tx span{font-size:10px;opacity:.95;display:block;margin-top:3px;line-height:1.4}
-  .ember .pic{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.25);flex:none}
-  .ptiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-  .ptile{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
-  .ptile .d{width:20px;height:20px;flex:none}
+  .pbody{padding:5px 13px}
+  .plogo{font-size:13px;font-weight:800;color:var(--orange)}
+  .pgreet{font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-top:9px}
+  .psub{font-size:9.5px;color:var(--soft);margin-top:5px;line-height:1.5}
+  .ember{margin-top:11px;background:var(--grad);border-radius:12px;padding:11px;color:#fff;display:flex;gap:8px;align-items:center}
+  .ember b{font-size:11.5px;font-weight:800;display:block}
+  .ember span{font-size:8px;opacity:.95;display:block;margin-top:2px}
+  .ember .pic{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.25);flex:none}
+  .ptiles{display:grid;grid-template-columns:1fr 1fr;gap:9px 6px;margin-top:13px}
+  .ptile{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700}
+  .ptile svg{width:15px;height:15px;flex:none}
   .c1{color:var(--orange)} .c2{color:#4E9E6A} .c3{color:#8578CE} .c4{color:#5B93C9}
+  /* phone B — crisis */
+  .pbar{display:flex;align-items:center;gap:7px;padding:6px 13px 4px}
+  .pbar .bk{width:18px;height:18px;border-radius:6px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+  .pbar .bk svg{width:11px;height:11px}
+  .pbar .step{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--faint)}
+  .ptitle{font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.25;padding:2px 13px 0}
+  .pnote{font-size:9px;color:var(--soft);padding:5px 13px 0;line-height:1.5}
+  .tl{padding:9px 13px 0;display:flex;flex-direction:column;gap:7px}
+  .tstep{display:flex;gap:8px;align-items:flex-start}
+  .tnum{width:20px;height:20px;flex:none;border-radius:50%;background:var(--wash);color:var(--orange600);font-family:var(--mono);font-weight:700;font-size:9px;display:flex;align-items:center;justify-content:center}
+  .tcard{flex:1;background:#fff;border-radius:9px;padding:7px 8px;box-shadow:0 1px 3px rgba(58,30,12,.06)}
+  .tcard b{font-size:9.5px;font-weight:750;display:block}
+  .tcard span{font-size:8px;color:var(--soft);display:block;margin-top:2px;line-height:1.4}
+  .pcta{margin:10px 13px 0;background:var(--grad);color:#fff;border-radius:11px;padding:9px;text-align:center;font-size:10.5px;font-weight:800}
 
-  .bubble{align-self:center;background:#fff;color:var(--ink);border-radius:14px;padding:11px 13px;
-    box-shadow:0 14px 30px -16px rgba(58,30,12,.4);max-width:190px;margin-left:-26px;margin-bottom:40px;
-    transform:rotate(2deg);position:relative;z-index:3}
-  .bubble .tag{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--orange600);text-transform:uppercase}
-  .bubble p{font-size:12px;color:var(--soft);margin-top:4px;line-height:1.5}
+  /* floating cards */
+  .fcard{position:absolute;background:#fff;border-radius:16px;box-shadow:0 22px 44px -18px rgba(40,16,2,.4);z-index:3}
+  .est{left:14px;top:300px;width:188px;padding:14px 16px;transform:rotate(-3deg)}
+  .est .k{font-size:10px;color:var(--faint);font-weight:700}
+  .est .v{font-family:var(--mono);font-size:26px;font-weight:800;color:var(--orange600);margin-top:4px}
+  .est .v small{font-size:12px;font-weight:700}
+  .est .ok{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:10px;font-weight:700;color:var(--ok)}
+  .est .ok svg{width:12px;height:12px}
+  .quote{right:12px;top:184px;width:222px;padding:15px 17px;transform:rotate(4deg)}
+  .quote .mk{color:var(--orange);margin-bottom:6px}
+  .quote .mk svg{width:16px;height:16px;fill:currentColor;stroke:none}
+  .quote p{font-size:13px;color:var(--ink);line-height:1.6;font-weight:600}
+  .quote .by{font-size:11px;color:var(--faint);margin-top:9px;text-align:right}
 
-  /* discovery */
-  .disc{background:var(--paper);padding:84px 56px 46px;text-align:center}
-  .disc .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
-  .disc h2{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.4;margin:12px 0 18px;text-wrap:balance}
-  .disc p{font-size:14px;color:var(--soft);line-height:1.8;max-width:58ch;margin:0 auto}
+  /* DISCOVERY */
+  .disc{background:var(--card);padding:30px 56px 50px;text-align:center}
+  .disc .eyebrow{font-size:13px;font-weight:800;color:var(--orange);letter-spacing:.02em}
+  .disc h2{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.42;margin:14px 0 18px;text-wrap:balance}
+  .disc p{font-size:13.5px;color:var(--soft);line-height:1.85;max-width:60ch;margin:0 auto}
   .disc p b{color:var(--ink);font-weight:700}
   .disc .hl{color:var(--orange600);font-weight:800}
 
-  .foot{display:flex;align-items:center;justify-content:center;gap:9px;padding:0 0 40px;background:var(--paper)}
-  .foot .dot{width:24px;height:24px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center}
-  .foot .dot svg{width:14px;height:14px}
-  .foot .name{font-size:17px;font-weight:800;color:var(--orange);letter-spacing:-.02em}
   @media(max-width:560px){
-    .top{padding:30px 24px 0} .bigword{font-size:98px} .bigword small{font-size:78px}
-    .disc{padding:74px 26px 38px} .disc h2{font-size:21px} .bubble{display:none}
+    .top{padding:24px 22px 0} .bigword{font-size:96px} .pretitle{font-size:15px}
+    .stage{height:0;margin:0;overflow:visible;padding-bottom:24px}
+    .phone,.fcard{position:static;transform:none;margin:12px auto 0;width:240px}
+    .fcard{width:auto;max-width:260px} .disc{padding:28px 24px 40px} .disc h2{font-size:21px}
   }
 </style>
 
 <div class="sheet">
   <div class="top">
-    <div class="halo"></div>
-    <div class="meta"><span>Diapet · 반려동물 장례·추모</span><span class="r">Product · 2026</span></div>
-    <div class="pretitle">가장 힘든 순간, 혼자가 아니도록</div>
-    <div class="bigword">끝까지<small>.</small></div>
+    <div class="meta">
+      <div class="l"><b>Diapet</b><span>반려동물 장례·추모 통합 플랫폼</span></div>
+      <div class="m"><b>Service</b><br>UX · UI · Flutter</div>
+      <div class="r">2026.09~
+        <div class="tag"><span class="d"><svg viewBox="0 0 64 64" fill="none"><path d="M16 48V22c0-4 5-6 8-3l16 20c3 3 8 1 8-3V16" stroke="#F15A24" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>DIAPET PROJECT</div>
+      </div>
+    </div>
+
+    <div class="pretitle">가장 힘든 순간에도,</div>
+    <div class="bigword">곁에.</div>
+
     <div class="stage">
-      <div class="phone">
+      <!-- floating estimate card -->
+      <div class="fcard est">
+        <div class="k">보리 · 중형(5~15kg) 기준</div>
+        <div class="v">22.0<small>만원~</small></div>
+        <div class="ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>부가세 포함 확정가 · 강매 없음</div>
+      </div>
+
+      <!-- phone A: home -->
+      <div class="phone pa">
         <div class="screen">
           <div class="pstat"><span>9:41</span><span class="dots">●●● ◔ ▰</span></div>
           <div class="pbody">
             <div class="plogo">Diapet</div>
             <div class="pgreet">지금,<br>많이 힘드신가요?</div>
-            <div class="pgreet-sub">혼자가 아니에요.<br>Diapet이 차근차근 도와드릴게요.</div>
-            <div class="ember">
-              <div class="tx"><b>아이를 보내주려 해요</b><span>지금 무엇을 해야 하는지 안내해드릴게요</span></div>
-              <div class="pic"></div>
-            </div>
+            <div class="psub">혼자가 아니에요.<br>Diapet이 차근차근 도와드릴게요.</div>
+            <div class="ember"><div><b>아이를 보내주려 해요</b><span>지금 무엇을 해야 하는지 안내</span></div><div class="pic"></div></div>
             <div class="ptiles">
-              <div class="ptile"><svg class="i d c1" viewBox="0 0 24 24"><path d="M4 21h16M6 21V9l6-4 6 4v12"/></svg>장례 예약</div>
-              <div class="ptile"><svg class="i d c2" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 13l2 2 4-4"/></svg>사전 준비</div>
-              <div class="ptile"><svg class="i d c3" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모 공간</div>
-              <div class="ptile"><svg class="i d c4" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg>펫로스 상담</div>
+              <div class="ptile"><svg class="i c1" viewBox="0 0 24 24"><path d="M4 21h16M6 21V9l6-4 6 4v12"/></svg>장례 예약</div>
+              <div class="ptile"><svg class="i c2" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 13l2 2 4-4"/></svg>사전 준비</div>
+              <div class="ptile"><svg class="i c3" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>추모 공간</div>
+              <div class="ptile"><svg class="i c4" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-3.9A8.4 8.4 0 1 1 21 11.5z"/></svg>펫로스 상담</div>
             </div>
           </div>
         </div>
       </div>
-      <div class="bubble">
-        <div class="tag">확정가</div>
-        <p>부가세 포함 금액 그대로. <b>현장 추가금·강매 없이</b> 예약해요.</p>
+
+      <!-- phone B: crisis timeline -->
+      <div class="phone pb">
+        <div class="screen">
+          <div class="pstat"><span>9:41</span><span class="dots">●●● ◔ ▰</span></div>
+          <div class="pbar"><span class="bk"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></span><span class="plogo">Diapet</span><span class="step">1 / 1</span></div>
+          <div class="ptitle">지금 이대로<br>따라 하세요</div>
+          <div class="pnote">서두르지 않아도 괜찮아요. 아이는 보통 <b style="color:#241A14">24~48시간</b> 안치가 가능해요.</div>
+          <div class="tl">
+            <div class="tstep"><div class="tnum">1</div><div class="tcard"><b>편안하게 눕혀 주세요</b><span>부드러운 담요 위에 옆으로</span></div></div>
+            <div class="tstep"><div class="tnum">2</div><div class="tcard"><b>서늘한 곳에 안치</b><span>직사광선을 피해서</span></div></div>
+            <div class="tstep"><div class="tnum">3</div><div class="tcard"><b>함께 보낼 것을 챙겨요</b><span>담요·장난감, 생전 사진</span></div></div>
+          </div>
+          <div class="pcta">이제 장례식장 찾기 →</div>
+        </div>
+      </div>
+
+      <!-- quote card -->
+      <div class="fcard quote">
+        <div class="mk"><svg viewBox="0 0 24 24"><path d="M7 7h4v6H7c0 2 1 3 3 3v2c-3 0-5-2-5-5V7zm8 0h4v6h-4c0 2 1 3 3 3v2c-3 0-5-2-5-5V7z"/></svg></div>
+        <p>떠나보내는 일도, 사랑의 한 부분이에요. 끝까지 함께할게요.</p>
+        <div class="by">— Diapet</div>
       </div>
     </div>
   </div>
@@ -110,13 +168,7 @@
     <h2>소중한 아이를 보내는 길이,<br>왜 이렇게 막막할까요?</h2>
     <p>갑작스러운 이별 앞에서 무엇부터 해야 할지 알기 어렵고, 장례 비용은 불투명하며,
       <b>정식 허가 없이 운영되는 업체</b>도 적지 않습니다. 슬픔에 잠긴 순간, 알아보고 비교할 여력은 더더욱 없죠.
-      <span class="hl">Diapet</span>은 '떠나보내는 일이 이렇게 혼란스러워도 될까'라는 물음에서 시작했습니다.
-      긴급 안내부터 <b>정부 등록을 검증한 장례식장</b>의 확정가 비교·예약, 그리고 오래 기억할 추모 공간까지
-      — 가장 힘든 순간을 <b>처음부터 끝까지</b> 함께합니다.</p>
+      <span class="hl">Diapet</span>은 '떠나보내는 일이 이렇게 혼란스러워도 될까'라는 물음에서 출발한,
+      <b>반려동물 장례·추모 서비스</b>입니다.</p>
   </section>
-
-  <div class="foot">
-    <span class="dot"><svg viewBox="0 0 64 64" fill="none"><path d="M16 48V22c0-4 5-6 8-3l16 20c3 3 8 1 8-3V16" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="name">Diapet</span>
-  </div>
 </div>
