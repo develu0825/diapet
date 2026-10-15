@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../app_assets.dart';
-import '../services/memorial_photo_store.dart';
+import '../services/memorial_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -36,7 +36,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
   bool _shared = false;
 
   final _picker = ImagePicker();
-  final _store = MemorialPhotoStore();
+  final MemorialRepository _store = memorialRepository;
   final List<File> _photos = []; // 갤러리에서 고른 추모 사진들(스와이프로 넘김)
 
   int get _candleCount => _candleLit ? 1204 : 1203;
@@ -48,7 +48,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
   }
 
   Future<void> _restorePhotos() async {
-    final saved = await _store.load();
+    final saved = await _store.loadPhotos();
     if (saved.isNotEmpty && mounted) {
       setState(() => _photos
         ..clear()
@@ -60,7 +60,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
     final picked = await _picker.pickMultiImage(imageQuality: 85);
     if (picked.isEmpty) return;
     // 전용 폴더로 복사 후 경로를 저장(영속).
-    final updated = await _store.addPicked(picked, _photos);
+    final updated = await _store.addPhotos(picked, _photos);
     if (mounted) {
       setState(() => _photos
         ..clear()
@@ -86,7 +86,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
             if (ni > oldIndex) ni -= 1;
             _photos.insert(ni, _photos.removeAt(oldIndex));
           });
-          _store.save(_photos);
+          _store.savePhotos(_photos);
         },
         onDelete: (index) {
           setState(() {
@@ -95,7 +95,7 @@ class _MemorialScreenState extends State<MemorialScreen> {
               removed.deleteSync(); // 실제 파일도 삭제
             } catch (_) {}
           });
-          _store.save(_photos);
+          _store.savePhotos(_photos);
         },
       ),
     );
