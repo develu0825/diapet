@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_routes.dart';
-import '../models/booking_draft.dart';
+import '../models/booking.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -8,11 +8,11 @@ import '../widgets/app_button.dart';
 import '../widgets/sticky_cta.dart';
 import 'confirm_screen.dart' show won;
 
-/// 예약 완료 (s-done) — 확정 안내 + 장례 이후 사후 케어 안내.
+/// 예약 완료 (s-done) — 생성된 예약([Booking]) 확정 안내 + 장례 이후 사후 케어 안내.
 class DoneScreen extends StatelessWidget {
-  const DoneScreen({super.key, required this.draft});
+  const DoneScreen({super.key, required this.booking});
 
-  final BookingDraft draft;
+  final Booking booking;
 
   void _toHome(BuildContext context) {
     Navigator.of(context).popUntil(ModalRoute.withName(Routes.homeShell));
@@ -20,7 +20,7 @@ class DoneScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final d = draft;
+    final b = booking;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -44,7 +44,7 @@ class DoneScreen extends StatelessWidget {
                         Text('예약이 확정되었어요', style: AppText.h1),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          '${d.vendor.name} · ${d.date} ${d.time}\n천천히 오세요. 저희가 준비해 두겠습니다.',
+                          '${b.vendorName} · ${b.date} ${b.time}\n천천히 오세요. 저희가 준비해 두겠습니다.',
                           textAlign: TextAlign.center,
                           style: AppText.body.copyWith(color: AppColors.soft),
                         ),
@@ -53,10 +53,11 @@ class DoneScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _SummaryCard(children: [
-                    _Row('장례식장', d.vendor.name),
-                    _Row('일시', '${d.date} ${d.time}'),
-                    _Row('확정 결제액', '${won(d.total)}원 (부가세 포함)'),
-                    _Row('참관', '전 과정 가능'),
+                    _Row('예약번호', b.id),
+                    _Row('장례식장', b.vendorName),
+                    _Row('일시', '${b.date} ${b.time}'),
+                    _Row('확정 결제액', '${won(b.total)}원 (부가세 포함)'),
+                    _Row('참관', '${b.viewers}명 · 전 과정 가능'),
                   ]),
                   const SizedBox(height: AppSpacing.sm),
                   Row(children: [

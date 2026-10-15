@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:diapet/main.dart';
+import 'package:diapet/models/booking.dart';
 import 'package:diapet/screens/preneed_screen.dart';
 import 'package:diapet/screens/quote_screen.dart';
 import 'package:diapet/services/auth_service.dart';
+import 'package:diapet/services/booking_repository.dart';
 
 /// 온보딩 → 로그인(둘러보기) → 약관 전체동의 → 홈 대시보드로 진입시키는 공통 헬퍼.
 Future<void> enterHome(WidgetTester tester) async {
@@ -120,6 +122,13 @@ void main() {
 
     expect(find.text('예약이 확정되었어요'), findsOneWidget);
     expect(find.text('장례 이후, 저희가 챙겨드릴게요', skipOffstage: false), findsOneWidget);
+
+    // 예약이 실제 레코드로 생성(예약번호 노출)되고 로컬에 저장됐는지 검증.
+    expect(find.text('예약번호'), findsOneWidget);
+    final saved = await tester.runAsync(() => bookingRepository.myBookings());
+    expect(saved!.length, 1);
+    expect(saved.first.vendorName, '포레스트 추모원');
+    expect(saved.first.status, BookingStatus.confirmed);
   });
 
   testWidgets('추모 탭 → 촛불 켜기로 카운트가 오른다', (tester) async {

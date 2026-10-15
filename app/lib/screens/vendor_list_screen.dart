@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../app_assets.dart';
 import '../app_routes.dart';
 import '../models/vendor.dart';
+import '../services/vendor_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -22,11 +23,24 @@ class VendorListScreen extends StatefulWidget {
 
 class _VendorListScreenState extends State<VendorListScreen> {
   String _query = '';
+  List<Vendor>? _vendors; // null = 불러오는 중
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final vendors = await vendorRepository.list();
+    if (mounted) setState(() => _vendors = vendors);
+  }
 
   List<Vendor> get _filtered {
-    if (_query.trim().isEmpty) return Vendor.seed;
+    final all = _vendors ?? const <Vendor>[];
+    if (_query.trim().isEmpty) return all;
     final q = _query.trim();
-    return Vendor.seed
+    return all
         .where((v) => v.name.contains(q) || v.location.contains(q))
         .toList();
   }
@@ -53,14 +67,22 @@ class _VendorListScreenState extends State<VendorListScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        for (final v in _filtered) ...[
-          VendorCard(
-            vendor: v,
-            onTap: () => Navigator.of(context)
-                .pushNamed(Routes.vendorDetail, arguments: v),
+        if (_vendors == null)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.orange500),
+            ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-        ],
+        if (_vendors != null)
+          for (final v in _filtered) ...[
+            VendorCard(
+              vendor: v,
+              onTap: () => Navigator.of(context)
+                  .pushNamed(Routes.vendorDetail, arguments: v),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
         const SizedBox(height: AppSpacing.xs),
         Text(
           '🔒 정식 등록되지 않은 업체는 노출되지 않아요.\n모든 업체의 허가번호를 실시간 대조합니다.',

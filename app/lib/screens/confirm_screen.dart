@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app_routes.dart';
 import '../models/booking_draft.dart';
+import '../services/booking_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -32,8 +33,21 @@ class ConfirmScreen extends StatefulWidget {
 class _ConfirmScreenState extends State<ConfirmScreen> {
   int _pay = 0;
   bool _agreed = false;
+  bool _submitting = false;
 
   static const _payMethods = ['카카오페이', '신용·체크카드', '현장 결제'];
+
+  Future<void> _confirm() async {
+    setState(() => _submitting = true);
+    try {
+      // TODO(backend): 결제 수단(_pay)으로 PG 승인 후 서버 예약 생성.
+      final booking = await bookingRepository.create(widget.draft);
+      if (!mounted) return;
+      Navigator.of(context).pushNamed(Routes.done, arguments: booking);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,10 +109,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
             ),
             StickyCta(
               child: AppButton(
-                label: '예약 확정 · ${won(d.total)}원',
-                onPressed: _agreed
-                    ? () => Navigator.of(context).pushNamed(Routes.done, arguments: d)
-                    : null,
+                label: _submitting ? '예약을 확정하는 중…' : '예약 확정 · ${won(d.total)}원',
+                onPressed: (_agreed && !_submitting) ? _confirm : null,
               ),
             ),
           ],

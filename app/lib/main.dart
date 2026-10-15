@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_routes.dart';
+import 'models/booking.dart';
 import 'models/booking_draft.dart';
 import 'models/vendor.dart';
 import 'screens/auth/consent_screen.dart';
@@ -69,7 +70,7 @@ class DiapetApp extends StatelessWidget {
             return MaterialPageRoute(
               settings: settings,
               builder: (_) => DoneScreen(
-                draft: settings.arguments as BookingDraft,
+                booking: settings.arguments as Booking,
               ),
             );
           default:
