@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:diapet/main.dart';
 import 'package:diapet/screens/preneed_screen.dart';
 import 'package:diapet/screens/quote_screen.dart';
+import 'package:diapet/services/auth_service.dart';
 
-/// 온보딩을 탭해 홈 대시보드로 진입시키는 공통 헬퍼.
+/// 온보딩 → 로그인(둘러보기) → 약관 전체동의 → 홈 대시보드로 진입시키는 공통 헬퍼.
 Future<void> enterHome(WidgetTester tester) async {
   await tester.pumpWidget(const DiapetApp());
   await tester.tap(find.byKey(const Key('onboarding-enter')));
   await tester.pumpAndSettle();
+  // 로그인 게이트: 둘러보기(게스트)로 빠르게 통과.
+  await tester.tap(find.byKey(const Key('login-guest')));
+  await tester.pumpAndSettle();
+  // 약관 동의: 전체 동의 후 계속.
+  await tester.tap(find.byKey(const Key('consent-agree-all')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('consent-continue')));
+  await tester.pumpAndSettle();
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // SharedPreferences 를 테스트용 인메모리로 mock → prefs 호출이 즉시 응답(행 방지).
+  // authService 는 전역 싱글턴이라 세션도 매번 비운다.
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    await authService.signOut();
+  });
+
   testWidgets('온보딩이 표시된다', (tester) async {
     await tester.pumpWidget(const DiapetApp());
     expect(find.byKey(const Key('onboarding-enter')), findsOneWidget);
@@ -146,5 +165,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('로그아웃', skipOffstage: false), findsOneWidget);
     expect(find.text('v1.0.0', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('온보딩 → 로그인 게이트가 열린다', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.byKey(const Key('onboarding-enter')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('login-kakao')), findsOneWidget);
+    expect(find.text('카카오로 시작하기'), findsOneWidget);
+    expect(find.byKey(const Key('login-guest')), findsOneWidget);
+  });
+
+  testWidgets('약관 필수 동의 전에는 홈으로 진입하지 않는다', (tester) async {
+    await tester.pumpWidget(const DiapetApp());
+    await tester.tap(find.byKey(const Key('onboarding-enter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('login-guest')));
+    await tester.pumpAndSettle();
+
+    // 아무 동의 없이 바로 계속 시도 → 여전히 동의 화면.
+    await tester.tap(find.byKey(const Key('consent-continue')));
+    await tester.pumpAndSettle();
+    expect(find.text('동의하고 시작하기'), findsOneWidget);
+    expect(find.text('아이를 보내주려 해요'), findsNothing);
+
+    // 전체 동의 후에는 홈으로 진입.
+    await tester.tap(find.byKey(const Key('consent-agree-all')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('consent-continue')));
+    await tester.pumpAndSettle();
+    expect(find.text('아이를 보내주려 해요'), findsOneWidget);
   });
 }

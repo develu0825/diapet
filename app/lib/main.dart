@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'app_routes.dart';
 import 'models/booking_draft.dart';
 import 'models/vendor.dart';
+import 'screens/auth/consent_screen.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/booking_screen.dart';
 import 'screens/confirm_screen.dart';
 import 'screens/crisis_screen.dart';
@@ -30,6 +32,8 @@ class DiapetApp extends StatelessWidget {
       initialRoute: Routes.onboarding,
       routes: {
         Routes.onboarding: (_) => const OnboardingScreen(),
+        Routes.login: (_) => const LoginScreen(),
+        Routes.consent: (_) => const ConsentScreen(),
         Routes.homeShell: (_) => const HomeShell(),
         Routes.crisis: (_) => const CrisisScreen(),
         Routes.quote: (_) => const QuoteScreen(),

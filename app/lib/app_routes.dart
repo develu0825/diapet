@@ -4,6 +4,8 @@
 /// 나머지 플로우(긴급·견적·상세·예약·결제·완료·사전준비)는 push로 쌓인다.
 abstract final class Routes {
   static const onboarding = '/'; // s-onboard
+  static const login = '/login'; // 로그인(카카오·애플·이메일·둘러보기)
+  static const consent = '/consent'; // 약관·개인정보 동의
   static const homeShell = '/home'; // s-home + 탭(장례/추모/마이)
   static const crisis = '/crisis'; // s-crisis (긴급 코드 타임라인)
   static const quote = '/quote'; // s-quote (견적)

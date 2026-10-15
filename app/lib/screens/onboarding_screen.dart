@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import '../app_assets.dart';
 import '../app_routes.dart';
+import '../services/auth_service.dart';
+import '../services/consent_store.dart';
 import '../theme/app_colors.dart';
 
-/// 온보딩(스플래시) (s-onboard) — 풀블리드 이미지. 탭하면 홈으로.
+/// 온보딩(스플래시) (s-onboard) — 풀블리드 이미지. 탭하면 로그인 게이트로.
 ///
 /// "함께한 모든 순간을, 평화롭게." 프로토타입의 전체 이미지 화면을 이식.
-class OnboardingScreen extends StatelessWidget {
+/// 이미 로그인·약관동의가 된 사용자는 바로 홈으로, 아니면 로그인으로 보낸다.
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 저장된 세션을 미리 복원해, 탭 시 목적지를 바로 판단할 수 있게 한다.
+    authService.restore();
+  }
+
+  Future<void> _enter() async {
+    final consented = await consentStore.hasConsented();
+    if (!mounted) return;
+    final loggedIn = authService.currentUser != null;
+    Navigator.of(context).pushReplacementNamed(
+      loggedIn && consented ? Routes.homeShell : Routes.login,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +39,7 @@ class OnboardingScreen extends StatelessWidget {
       backgroundColor: AppColors.sunset,
       body: GestureDetector(
         key: const Key('onboarding-enter'),
-        onTap: () =>
-            Navigator.of(context).pushReplacementNamed(Routes.homeShell),
+        onTap: _enter,
         child: SizedBox.expand(
           child: Image.asset(
             AppAssets.onboarding,
